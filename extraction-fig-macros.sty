@@ -1,0 +1,121 @@
+\newcommand{\extractionex}[5]{
+	\foreach \x in {1,...,#1} {
+		\node [minimum size=5mm] (source \x) at (0+\x*7mm,12mm) {};
+		\node [minimum size=5mm] (target \x) at (0+\x*7mm,0) {};
+	}
+	#5
+	\foreach \src/\trg in {#4}{
+		\draw (source \src.south) -- (target \trg.north);
+	}
+	\foreach \x in {#2} {
+		\node at (source \x) {$f_{\x}$};
+		\node at (target \x) {$e_{\x}$};
+	}
+	\foreach \x in {#3}{
+		\node at (source \x) {$\mathbf{f_{\x}}$};
+		\node at (target \x) {$e_{\x}$};
+	}
+}
+\newcommand\currentex\relax
+
+\tikzstyle{main phrase} = [fill=gray!70,rounded corners]
+\tikzstyle{subtracted phrase} = [fill=gray!30,rounded corners]
+\tikzstyle{source gap} = [fill=white,draw=gray,rounded corners]
+
+% prefix tree macros
+\tikzstyle{root node} = [circle,draw]
+\tikzstyle{active node} = [rectangle,draw]
+\tikzstyle{inactive node} = [rectangle,fill=gray]
+\tikzstyle{suffix link} = [->,densely dotted]
+
+% stack macros
+\newcounter{stackpos}
+\newcounter{stepnum}
+\newlength{\firststackwidth}
+\setlength{\firststackwidth}{6.5mm}
+\newlength{\secondstackwidth}
+\setlength{\secondstackwidth}{6.5mm}
+\newlength{\resultstackwidth}
+\setlength{\resultstackwidth}{12mm}
+\newlength{\stackelementheight}
+\setlength{\stackelementheight}{6mm}
+\newlength{\stacksep}
+\setlength{\stacksep}{5mm}
+\newlength{\stackxpos}
+\setlength{\stackxpos}{0pt}
+\newlength{\stackaltxpos}
+\setlength{\stackaltxpos}{0pt}
+\newlength{\stackaltypos}
+\setlength{\stackaltypos}{0pt}
+\newlength{\stackrightmargin}
+\setlength{\stackrightmargin}{3mm}
+\newlength{\stackleftmargin}
+\setlength{\stackleftmargin}{3mm}
+\newlength{\stackbottommargin}
+\setlength{\stackbottommargin}{3mm}
+\newlength{\stacktopmargin}
+\setlength{\stacktopmargin}{3mm}
+\newcounter{maxstacksize}
+\setcounter{maxstacksize}{5}
+
+\newcommand{\stackdiagram}[8]{
+	% #1 -- stack 1 contents
+	% #2 -- stack 1 popped item
+	% #3 -- stack 2 contents
+	% #4 -- stack 2 popped item
+	% #5 -- result stack contents
+	% #6 -- stack 1 comparison item
+	% #7 -- stack 2 comparison item
+	% #8 -- result stack input direction
+	\setlength{\stackxpos}{0pt}
+	\setcounter{stackpos}{0}
+	\foreach \label in {#1}{
+		\node [rectangle,draw,minimum width=\firststackwidth,minimum height=\stackelementheight](stack 1 \thestackpos) at (\stackxpos,\stackelementheight*\thestackpos) {\label};
+		\addtocounter{stackpos}{1}
+	}
+	\ifthenelse{\equal{#2}{}}{}{
+		\ifthenelse{\equal{#2}{popped}}{}{
+			\node [rectangle,fill=lightgray,draw,minimum width=\firststackwidth,minimum height=\stackelementheight]
+				(stack 1 \thestackpos) at (\stackxpos,\stackelementheight*\thestackpos) {#2};
+		}
+	}
+
+	\setlength{\stackxpos}{\stacksep + \firststackwidth/2 +\secondstackwidth/2}
+	\setcounter{stackpos}{0}
+	\foreach \label in {#3}{
+		\node [rectangle,draw,minimum width=\secondstackwidth,minimum height=\stackelementheight](stack 2 \thestackpos) at (\stackxpos,\stackelementheight*\thestackpos) {\label};
+		\addtocounter{stackpos}{1}
+	}
+	\ifthenelse{\equal{#4}{}}{}{
+		\ifthenelse{\equal{#4}{popped}}{}{
+			\node [rectangle,fill=lightgray,draw,minimum width=\secondstackwidth,minimum height=\stackelementheight]
+				(stack 2 \thestackpos) at (\stackxpos,\stackelementheight*\thestackpos) {#4};
+		}
+	}
+
+	\addtolength{\stackxpos}{\stacksep + \resultstackwidth/2 +\secondstackwidth/2}
+	\setcounter{stackpos}{0}
+	\foreach \label in {#5}{
+		\node [rectangle,draw,minimum width=\resultstackwidth,minimum height=\stackelementheight](stack) at (\stackxpos,\stackelementheight*\themaxstacksize-\stackelementheight*\thestackpos-\stackelementheight) {\label};
+		\addtocounter{stackpos}{1}
+	}
+	
+	\draw[<->] (stack 1 #6.east) -- (stack 2 #7.west);
+	\ifthenelse{\equal{#8}{}}{}{
+		\ifthenelse{\equal{#8}{west}}{
+			\draw[->] (stack 1 #7.east) -- (stack 2 #8.west);
+		}{
+			\draw[->] (stack 2 #7.east) ..controls (stack 2 #7.east -| stack.#8) .. (stack.#8);
+		}
+	}
+	\setlength{\stackxpos}{\firststackwidth + \secondstackwidth + \resultstackwidth + \stacksep*2 + \stackrightmargin + \stackleftmargin}
+	\setlength{\stackaltxpos}{0pt - \firststackwidth/2 - \stackleftmargin}
+	\setlength{\stackaltypos}{\stackelementheight*\themaxstacksize + \stackbottommargin + \stacktopmargin}
+	\node (frame) [anchor=south west,rectangle,draw,rounded corners,thin,gray,minimum width=\stackxpos,minimum height=\stackaltypos] at (\stackaltxpos,0pt-\stackbottommargin - \stackelementheight/2) {};
+	\node [anchor=north west] at (frame.north west) {\thestepnum};
+	\addtocounter{stepnum}{1}
+}
+
+
+
+

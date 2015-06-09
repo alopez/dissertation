@@ -1,0 +1,36 @@
+\setcounter{stepnum}{1}
+\setlength{\stacksep}{6mm}
+\setlength{\firststackwidth}{12mm}
+\setlength{\secondstackwidth}{12mm}
+\setcounter{maxstacksize}{5}
+\begin{figure}
+	\begin{tikzpicture}
+		\begin{scope}[shift={(0,0)}]
+			\stackdiagram
+				{2, 6, 10, 15} % stack 1
+				{} % stack 1 top
+				{0, 4, 8, 13} % stack 2 
+				{}  % stack 2 top
+				{}  % result stack
+				{2} % stack 1 item 
+				{1} % stack 2 item
+				{}  % input direction
+		\end{scope}
+		\begin{scope}[shift={(5.5,0)}]
+		\end{scope}
+		\begin{scope}[shift={(10,0)}]
+		\end{scope}
+		\begin{scope}[shift={(0,-4)}]
+		\end{scope}
+		\begin{scope}[shift={(5,-4)}]
+		\end{scope}
+		\begin{scope}[shift={(10,-4)}]
+		\end{scope}
+		\begin{scope}[shift={(0,-8)}]
+		\end{scope}
+		\begin{scope}[shift={(5,-8)}]
+		\end{scope}
+		\begin{scope}[shift={(10,-8)}]
+		\end{scope}
+	\end{tikzpicture}
+\end{figure}

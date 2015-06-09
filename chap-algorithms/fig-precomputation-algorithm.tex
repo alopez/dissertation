@@ -1,0 +1,166 @@
+\begin{tikzpicture} [node distance=2.7cm]
+	\matrix (sentence) [nodes={text height=10pt}] at (0,0){
+	\node (word 0) {it}; & \node (word 1) {makes}; & \node (word 2) {him}; & \node (word 3) {and}; & 
+	\node (word 4) {it}; & \node (word 5) {mars}; & \node (word 6) {him}; & \node (word 7) {,}; & 
+	\node (word 8) {it}; & \node (word 9) {sets}; & \node (word 10) {him}; & \node (word 11) {on}; & 
+	\node (word 12) {and}; & \node (word 13) {it}; & \node (word 14) {takes}; & \node (word 15) {him}; & 
+	\node (word 16) {off}; & \node (word 17) {.}; & \node (word 18) {\#};\\
+	\node (num 0) {0}; & \node (num 1) {1}; & \node (num 2) {2}; & \node (num 3) {3}; & 
+	\node (num 4) {4}; & \node (num 5) {5}; & \node (num 6) {6}; & \node (num 7) {7}; & 
+	\node (num 8) {8}; & \node (num 9) {9}; & \node (num 10) {10}; & \node (num 11) {11}; & 
+	\node (num 12) {12}; & \node (num 13) {13}; & \node (num 14) {14}; & \node (num 15) {15}; & 
+	\node (num 16) {16}; & \node (num 17) {17}; & \node (num 18) {18};\\
+	};
+
+	\path (sentence.south) -- +(3.5,-0.75) coordinate (step pos);
+	\node (step) [text width=7cm] at (step pos) {\begin{center}Add frequent word and position to queue.\end{center}};
+
+	\path (word 0.north east) -- +(0pt,-35pt) coordinate (pos 0 east);
+	\fill[rounded corners,lightgray] (word 0.north west) rectangle (pos 0 east);
+	\node (word 0) [text height=10pt] at (word 0.center) {it}; 
+	\node (num 0)  [text height=10pt] at (num 0.center) {0};
+	
+	\path (sentence.south west) -- +(0,-0.75) coordinate (queue loc);
+	\node (queue) [anchor=west,right=3pt] at (queue loc) {Queue:};
+	\node (queued 0) [draw,text height=10pt,anchor=west] at (queue.east) {it, 0};
+	\path (queued 0) -- +(0,1) coordinate (queued 0 north);
+
+	\draw[->] (num 0.south) ..controls +(0,-0.5) and (queued 0 north) .. (queued 0.north);
+
+	\path (sentence.south west) -- +(0,-1.25) coordinate (separator west);
+	\path (sentence.south east) -- +(0,-1.25) coordinate (separator east);
+	\draw[thin,gray] (separator west) -- (separator east);
+
+	\matrix (sentence) [nodes={text height=10pt},below of=sentence]{
+	\node (word 0) {it}; & \node (word 1) {makes}; & \node (word 2) {him}; & \node (word 3) {and}; & 
+	\node (word 4) {it}; & \node (word 5) {mars}; & \node (word 6) {him}; & \node (word 7) {,}; & 
+	\node (word 8) {it}; & \node (word 9) {sets}; & \node (word 10) {him}; & \node (word 11) {on}; & 
+	\node (word 12) {and}; & \node (word 13) {it}; & \node (word 14) {takes}; & \node (word 15) {him}; & 
+	\node (word 16) {off}; & \node (word 17) {.}; & \node (word 18) {\#};\\
+	\node (num 0) {0}; & \node (num 1) {1}; & \node (num 2) {2}; & \node (num 3) {3}; & 
+	\node (num 4) {4}; & \node (num 5) {5}; & \node (num 6) {6}; & \node (num 7) {7}; & 
+	\node (num 8) {8}; & \node (num 9) {9}; & \node (num 10) {10}; & \node (num 11) {11}; & 
+	\node (num 12) {12}; & \node (num 13) {13}; & \node (num 14) {14}; & \node (num 15) {15}; & 
+	\node (num 16) {16}; & \node (num 17) {17}; & \node (num 18) {18};\\
+	};
+
+	\path (sentence.south) -- +(3.5,-0.75) coordinate (step pos);
+	\node (step) [text width=7cm] at (step pos) {\begin{center}Advance pointer, skipping infrequent words.\end{center}};
+
+	\path (word 1.north east) -- +(0pt,-35pt) coordinate (pos 1 east);
+	\fill[rounded corners,lightgray] (word 1.north west) rectangle (pos 1 east);
+	\node (word 1) [text height=10pt] at (word 1.center) {makes}; 
+	\node (num 1)  [text height=10pt] at (num 1.center) {1};
+	
+	\path (sentence.south west) -- +(0,-0.75) coordinate (queue loc);
+	\node (queue) [anchor=west,right=3pt] at (queue loc) {Queue:};
+	\node (queued 0) [draw,text height=10pt,anchor=west] at (queue.east) {it, 0};
+	%\path (queued 0) -- +(0,1) coordinate (queued 0 north);
+    %
+	%\draw[->] (num 0.south) ..controls +(0,-0.5) and (queued 0 north) .. (queued 0.north);
+
+	\path (sentence.south west) -- +(0,-1.25) coordinate (separator west);
+	\path (sentence.south east) -- +(0,-1.25) coordinate (separator east);
+	\draw[thin,gray] (separator west) -- (separator east);
+	
+	\matrix (sentence) [nodes={text height=10pt},below of=sentence]{
+	\node (word 0) {it}; & \node (word 1) {makes}; & \node (word 2) {him}; & \node (word 3) {and}; & 
+	\node (word 4) {it}; & \node (word 5) {mars}; & \node (word 6) {him}; & \node (word 7) {,}; & 
+	\node (word 8) {it}; & \node (word 9) {sets}; & \node (word 10) {him}; & \node (word 11) {on}; & 
+	\node (word 12) {and}; & \node (word 13) {it}; & \node (word 14) {takes}; & \node (word 15) {him}; & 
+	\node (word 16) {off}; & \node (word 17) {.}; & \node (word 18) {\#};\\
+	\node (num 0) {0}; & \node (num 1) {1}; & \node (num 2) {2}; & \node (num 3) {3}; & 
+	\node (num 4) {4}; & \node (num 5) {5}; & \node (num 6) {6}; & \node (num 7) {7}; & 
+	\node (num 8) {8}; & \node (num 9) {9}; & \node (num 10) {10}; & \node (num 11) {11}; & 
+	\node (num 12) {12}; & \node (num 13) {13}; & \node (num 14) {14}; & \node (num 15) {15}; & 
+	\node (num 16) {16}; & \node (num 17) {17}; & \node (num 18) {18};\\
+	};
+
+	\path (sentence.south) -- +(3.5,-0.75) coordinate (step pos);
+	\node (step) [text width=7cm] at (step pos) {\begin{center}Iterate through all words.\end{center}};
+
+	\path (word 2.north east) -- +(0pt,-35pt) coordinate (pos 2 east);
+	\fill[rounded corners,lightgray] (word 2.north west) rectangle (pos 2 east);
+	\node (word 2) [text height=10pt] at (word 2.center) {him}; 
+	\node (num 2)  [text height=10pt] at (num 2.center) {2};
+	
+	\path (sentence.south west) -- +(0,-0.75) coordinate (queue loc);
+	\node (queue) [anchor=west,right=3pt] at (queue loc) {Queue:};
+	\node (queued 0) [draw,text height=10pt,anchor=west] at (queue.east) {it, 0};
+	\node (queued 2) [draw,text height=10pt,anchor=west] at (queued 0.east) {him, 2};
+	\path (queued 2) -- +(0,1) coordinate (queued 2 north);
+    
+	\draw[->] (num 2.south) ..controls +(0,-0.5) and (queued 2 north) .. (queued 2.north);
+
+	\path (sentence.south west) -- +(0,-1.25) coordinate (separator west);
+	\path (sentence.south east) -- +(0,-1.25) coordinate (separator east);
+	\draw[thin,gray] (separator west) -- (separator east);
+
+	\node [below of=sentence] {...};
+
+	\path (sentence.south west) -- +(0,-2.5) coordinate (separator west);
+	\path (sentence.south east) -- +(0,-2.5) coordinate (separator east);
+	\draw[thin,gray] (separator west) -- (separator east);
+
+	\matrix (sentence) [nodes={text height=10pt},below of=sentence,node distance=4.6cm]{
+	\node (word 0) {it}; & \node (word 1) {makes}; & \node (word 2) {him}; & \node (word 3) {and}; & 
+	\node (word 4) {it}; & \node (word 5) {mars}; & \node (word 6) {him}; & \node (word 7) {,}; & 
+	\node (word 8) {it}; & \node (word 9) {sets}; & \node (word 10) {him}; & \node (word 11) {on}; & 
+	\node (word 12) {and}; & \node (word 13) {it}; & \node (word 14) {takes}; & \node (word 15) {him}; & 
+	\node (word 16) {off}; & \node (word 17) {.}; & \node (word 18) {\#};\\
+	\node (num 0) {0}; & \node (num 1) {1}; & \node (num 2) {2}; & \node (num 3) {3}; & 
+	\node (num 4) {4}; & \node (num 5) {5}; & \node (num 6) {6}; & \node (num 7) {7}; & 
+	\node (num 8) {8}; & \node (num 9) {9}; & \node (num 10) {10}; & \node (num 11) {11}; & 
+	\node (num 12) {12}; & \node (num 13) {13}; & \node (num 14) {14}; & \node (num 15) {15}; & 
+	\node (num 16) {16}; & \node (num 17) {17}; & \node (num 18) {18};\\
+	};
+
+	\path (sentence.south) -- +(3.5,-1) coordinate (step pos);
+	\node (step) [text width=6cm] at (step pos) {\begin{center}Pop the first item from queue when its distance to current word reaches the maximum pattern length.\end{center}};
+
+	\path (word 9.north east) -- +(0pt,-35pt) coordinate (pos 9 east);
+	\fill[rounded corners,lightgray] (word 9.north west) rectangle (pos 9 east);
+	\node (word 9) [text height=10pt] at (word 9.center) {sets}; 
+	\node (num 9)  [text height=10pt] at (num 9.center) {9};
+	
+	\path (sentence.south west) -- +(0,-0.75) coordinate (queue loc);
+	\node (queue) [anchor=west,right=3pt] at (queue loc) {Queue:};
+	\node (queued 0) [lightgray,fill=lightgray,text height=10pt,anchor=west] at (queue.east) {it, 0};
+	\node (queued 2) [draw,text height=10pt,anchor=west,right=3mm] at (queued 0.east) {him, 2};
+	\node (queued 4) [draw,text height=10pt,anchor=west] at (queued 2.east) {it, 4};
+	\node (queued 6) [draw,text height=10pt,anchor=west] at (queued 4.east) {him, 6};
+	\node (queued 8) [draw,text height=10pt,anchor=west] at (queued 6.east) {it, 8};
+	
+	\node (queued 0 popped) [draw,text height=10pt,anchor=west,below of=queued 0,node distance=1.2cm] {it, 0};
+
+	\draw[->] (queued 0.south) -- (queued 0 popped.north);
+	\draw[snake=brace,segment amplitude=2mm] (word 0.north west) -- (word 9.north east) node [anchor=south,pos=0.5,above=2mm] {$\maxphrasespan = 10$};
+
+	\path (sentence.south west) -- +(0,-3.5) coordinate (it X him loc);
+	\node (it X him) [anchor=west,right=6mm] at (it X him loc) {it $X$ him:};
+	\node (it X him 1) [draw,text height=10pt,anchor=west] at (it X him.east) {$0, 2$};
+	\node (it X him 2) [draw,text height=10pt,anchor=west] at (it X him 1.east) {$0, 6$};
+
+	\node (it X it) [anchor=west,right=5mm] at (it X him 2.east) {it $X$ it:};
+	\node (it X it 1) [draw,text height=10pt,anchor=west] at (it X it.east) {$0, 4$};
+	\node (it X it 2) [draw,text height=10pt,anchor=west] at (it X it 1.east) {$0, 8$};
+	
+	\path (it X him 1.north) -- +(0,1) coordinate (it X him 1 north);
+	\path (it X him 2.north) -- +(0,1) coordinate (it X him 2 north);
+	\path (it X it 1.north) -- +(0,1) coordinate (it X it 1 north);
+	\path (it X it 2.north) -- +(0,1) coordinate (it X it 2 north);
+	
+	\draw[->] (queued 2.south) ..controls +(0,-1) and (it X him 1 north) .. (it X him 1.north);
+	\draw[->] (queued 6.south) ..controls +(0,-1) and (it X him 2 north) .. (it X him 2.north);
+	\draw[->] (queued 4.south) ..controls +(0,-1) and (it X it 1 north) .. (it X it 1.north);
+	\draw[->] (queued 8.south) ..controls +(0,-1) and (it X it 2 north) .. (it X it 2.north);
+	
+	\draw[->] (queued 0 popped) ..controls +(0.5,0) and (it X him 1 north) .. (it X him 1.north);
+	\draw[->] (queued 0 popped) ..controls +(1,0) and (it X him 2 north) .. (it X him 2.north);
+	\draw[->] (queued 0 popped) ..controls +(2,0) and (it X it 1 north) .. (it X it 1.north);
+	\draw[->] (queued 0 popped) ..controls +(3,0) and (it X it 2 north) .. (it X it 2.north);
+
+	\path (sentence.south) -- +(3.5,-3.5) coordinate (step pos);
+	\node (step) [text width=6cm] at (step pos) {\begin{center}Combine the popped item with each remaining item in the queue, and record the resulting pattern locations.\end{center}};
+
+\end{tikzpicture}

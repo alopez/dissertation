@@ -1,0 +1,117 @@
+\begin{tikzpicture}[node distance=1.5cm]
+	% this figure uses invisible nodes to make the
+	% top and bottom of the alignment links to line up,
+	% which is a little hacky.
+	\matrix (english sentence) [nodes={anchor=mid}] {
+		\node (word 0) {However}; & 
+		\node (word 1) {,}; & 
+		\node (word 2) {the}; & 
+		\node (word 3) {sky}; & 
+		\node (word 4) {remained}; & 
+		\node (word 5) {clear}; & 
+		\node (word 6) {under}; & 
+		\node (word 7) {the}; & 
+		\node (word 8) {strong}; & 
+		\node (word 9) {north}; & 
+		\node (word 10) {wind}; & 
+		\node (word 11) {.}; \\
+	};
+
+	\matrix (english phrases) [inner sep=0,nodes={inner sep=2pt,anchor=mid},column sep=5,below of=english sentence] {
+		\node (phrase 0) {However}; & 
+		\node (phrase 1) {,}; & 
+		\node (phrase 2) {the sky remained clear}; & 
+		\node (phrase 3) {under the strong north wind}; & 
+		\node (phrase 4) {.}; \\
+	};
+	\draw (phrase 0.north west |- english phrases.north) rectangle (phrase 0.south east |- english phrases.south);
+	\draw (phrase 1.north west |- english phrases.north) rectangle (phrase 1.south east |- english phrases.south);
+	\draw (phrase 2.north west |- english phrases.north) rectangle (phrase 2.south east |- english phrases.south);
+	\draw (phrase 3.north west |- english phrases.north) rectangle (phrase 3.south east |- english phrases.south);
+	\draw (phrase 4.north west |- english phrases.north) rectangle (phrase 4.south east |- english phrases.south);
+
+	\draw[snake=brace] (word 5.south east |- english sentence.south west) -- (word 2.south west |- english sentence.south west) coordinate [pos=0.5,below=2] (phrase 2 span);
+	\draw[snake=brace] (word 10.south east |- english sentence.south west) -- (word 6.south west |- english sentence.south west) coordinate [pos=0.5,below=2] (phrase 3 span);
+	\draw[->] (word 0.south |- english sentence.south) -- (phrase 0 |- english phrases.north);
+	\draw[->] (word 1.south |- english sentence.south) -- (phrase 1 |- english phrases.north);
+	\draw[->] (phrase 2 span) -- (phrase 2 |- english phrases.north);
+	\draw[->] (phrase 3 span) -- (phrase 3 |- english phrases.north);
+	\draw[->] (word 11.south |- english sentence.south) -- (phrase 4 |- english phrases.north);
+
+	\matrix (chinese phrases) [inner sep=0,nodes={inner sep=2pt,anchor=mid},column sep=7,below of=english phrases] {
+		\node (zh phrase 0) {\zh{虽然}}; & 
+
+		\node (zh phrase 4) {\zh{,}}; & 
+		\node (zh phrase 5) {\zh{但}}; & 
+
+		\node (zh phrase 6) {\zh{天空}}; & 
+		\node (zh phrase 7) {\zh{依然}}; & 
+		\node (zh phrase 8) {\zh{十分}}; & 
+		\node (zh phrase 9) {\zh{清澈}}; & 
+
+		\node (zh phrase 1) {\zh{北}}; & 
+		\node (zh phrase 2) {\zh{风}}; & 
+		\node (zh phrase 3) {\zh{呼啸}}; & 
+
+		\node (zh phrase 10) {~~\zh{。}}; \\
+	};
+	\draw (zh phrase 0.north west |- chinese phrases.north) rectangle (zh phrase 0.south east |- chinese phrases.south);
+	\draw (zh phrase 4.north west |- chinese phrases.north) rectangle (zh phrase 5.south east |- chinese phrases.south);
+	\draw (zh phrase 6.north west |- chinese phrases.north) rectangle (zh phrase 9.south east |- chinese phrases.south);
+	\draw (zh phrase 1.north west |- chinese phrases.north) rectangle (zh phrase 3.south east |- chinese phrases.south);
+	\draw (zh phrase 10.north west |- chinese phrases.north) rectangle (zh phrase 10.south east |- chinese phrases.south);
+
+	\path (zh phrase 4) -- (zh phrase 5) coordinate[pos=0.5] (zh phrase 45);
+	\path (zh phrase 7) -- (zh phrase 8) coordinate[pos=0.5] (zh phrase 78);
+
+	\draw[->] (phrase 0 |- english phrases.south) -- (zh phrase 0 |- chinese phrases.north);
+	\draw[->] (phrase 1 |- english phrases.south) -- (zh phrase 45 |- chinese phrases.north);
+	\draw[->] (phrase 2 |- english phrases.south) -- (zh phrase 78 |- chinese phrases.north);
+	\draw[->] (phrase 3 |- english phrases.south) -- (zh phrase 2 |- chinese phrases.north);
+	\draw[->] (phrase 4 |- english phrases.south) -- (zh phrase 10 |- chinese phrases.north);
+
+	\matrix (chinese sentence) [inner sep=0,nodes={inner sep=2pt,anchor=mid},column sep=1.5,below of=chinese phrases] {
+		\node (zh final 0) {\zh{虽然}}; & 
+		\node (zh final 1) {\zh{北}}; & 
+		\node (zh final 2) {\zh{风}}; & 
+		\node (zh final 3) {\zh{呼啸}}; & 
+		\node (zh final 4) {\zh{,}}; & 
+		\node (zh final 5) {\zh{但}}; & 
+		\node (zh final 6) {\zh{天空}}; & 
+		\node (zh final 7) {\zh{依然}}; & 
+		\node (zh final 8) {\zh{十分}}; & 
+		\node (zh final 9) {\zh{清澈}}; & 
+		\node (zh final 10) {~~\zh{。}}; \\
+		\node{\em Although}; & 
+		\node{\em north}; & 
+		\node{\em wind}; & 
+		\node{\em howls}; & 
+		\node{\em ,}; & 
+		\node{\em but}; & 
+		\node{\em sky}; & 
+		\node{\em still}; & 
+		\node{\em extremely}; & 
+		\node{\em limpid}; & 
+		\node{\em .~}; \\
+	};
+
+	\path (zh final 4) -- (zh final 5) coordinate[pos=0.5] (zh final 45);
+	\path (zh final 7) -- (zh final 8) coordinate[pos=0.5] (zh final 78);
+
+	\draw (zh final 0.north west |- chinese sentence.north) rectangle (zh final 0.south east |- chinese sentence.center);
+	\draw (zh final 4.north west |- chinese sentence.north) rectangle (zh final 5.south east |- chinese sentence.center);
+	\draw (zh final 6.north west |- chinese sentence.north) rectangle (zh final 9.south east |- chinese sentence.center);
+	\draw (zh final 1.north west |- chinese sentence.north) rectangle (zh final 3.south east |- chinese sentence.center);
+	\draw (zh final 10.north west |- chinese sentence.north) rectangle (zh final 10.south east |- chinese sentence.center);
+
+	\draw[->] (zh phrase 0 |- chinese phrases.south) -- (zh final 0 |- chinese sentence.north);
+	\draw[->] (zh phrase 45 |- chinese phrases.south) -- (zh final 45 |- chinese sentence.north);
+	\draw[->] (zh phrase 78 |- chinese phrases.south) -- (zh final 78 |- chinese sentence.north);
+	\draw[->] (zh phrase 2 |- chinese phrases.south) -- (zh final 2 |- chinese sentence.north);
+	\draw[->] (zh phrase 10 |- chinese phrases.south) -- (zh final 10 |- chinese sentence.north);
+
+	\node [anchor=east,below=0.5cm] at (english sentence.west) {(1)};
+	\node [anchor=east,below=2cm] at (english sentence.west) {(2)};
+	\node [anchor=east,below=3.5cm] at (english sentence.west) {(3)};
+
+\end{tikzpicture}

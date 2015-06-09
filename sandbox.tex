@@ -1,0 +1,124 @@
+%Thesis Main Page used with thesis.sty (Dorothea Brosius, August 2006) based on the
+%University of Maryland, College Park  "Thesis and Dissertation Style Guide," 
+%2005-2006, Fall 2005 Edition
+
+\documentclass[12pt]{thesis-2}  % USE IN FINAL VERSION
+%\documentclass[11pt]{nice-thesis}
+\usepackage[sort,round]{natbib}
+\usepackage{lscape}
+\usepackage{indentfirst}
+\usepackage{latexsym}
+\usepackage{multirow}
+\usepackage[pointedenum]{paralist}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[noend]{algpseudocode}
+% Chinese stuff (borrowed from HLT 2005 paper)
+\usepackage{CJK}
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+\usepackage{mathptm}
+\usepackage{afterpage}
+\usepackage{tikz}
+\usepackage{sparklines}
+\usepackage{hyperref}
+\usepackage{lopez}
+\usepackage{extraction-fig-macros}
+
+\usetikzlibrary{snakes}
+\usetikzlibrary{matrix}
+
+\pdfmapfile{+cyberbit}
+\newcommand{\zh}[1]{\begin{CJK*}{UTF8}{cyberbit}#1\end{CJK*}}
+
+
+%\renewcommand{\baselinestretch}{2} % USE IN FINAL VERSION
+\setlength{\textwidth}{5.9in}
+\setlength{\textheight}{9in}
+\setlength{\topmargin}{-.50in}
+\setlength{\oddsidemargin}{.55in}
+\setlength{\parindent}{.4in}
+\pagestyle{empty}
+
+
+
+
+\begin{document}
+
+%\include{Abstract} %(must be first, required, non-numbered) 
+\include{officialtitle} %(must follow Abstract, required, non-numbered)
+%\include{Copyright} %(highly recommended, non-numbered)
+
+%Pages from this point start at lower-case Roman number ii)
+\pagestyle{plain}
+\pagenumbering{roman}
+\setcounter{page}{2}
+
+%\include{Preface}  %(if present, start at lower-case Roman number ii)
+%\include{Foreword} %(if present, lower-case Roman)
+%\include{Dedication} %(if present, lower-case Roman)
+%\include{Acknowledgements} %(if present, lower-case Roman)
+
+%\renewcommand{\baselinestretch}{1}
+%\small\normalsize
+%\tableofcontents %(required, lower-case Roman)
+%\newpage
+%\setlength{\parskip}{1em}
+%\listoftables %(if present, lower-case Roman)
+%\newpage
+%\listoffigures %(if present, lower-case Roman) % USE IN FINAL VERSION
+%\newpage % USE IN FINAL VERSION
+% LIST OF ABBREVIATIONS
+%\addcontentsline{toc}{chapter}{List of Abbreviations}
+%\include{Abbreviations}
+
+%\newcommand{\figpreamble}{\renewcommand{\baselinestretch}{1}}
+%\newcommand{\figpostamble}{\renewcommand{\baselinestretch}{2}}
+\newcommand{\figpreamble}{}
+\newcommand{\figpostamble}{}
+\newcommand{\figfontsize}[1]{{\small #1}}
+
+
+\newpage
+\setlength{\parskip}{0em}
+%\renewcommand{\baselinestretch}{2} % USE IN FINAL VERSION
+\small\normalsize
+
+%Pages from this point start at Arabic numeral 1
+\setcounter{page}{1}
+\pagenumbering{arabic}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SANDBOX %%%%%%
+\begin{quote}
+	{\em 
+	\begin{itemize}
+		\item[\rm Calvin:] You can't just turn on creativity like a faucet. You have to be in the right mood.
+		\item[\rm Hobbes:] What mood is that?
+		\item[\rm Calvin:] Last-minute panic.
+	\end{itemize}
+	}
+	\begin{flushright}
+		--Bill Watterson
+	\end{flushright}
+\end{quote}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\renewcommand{\topfraction}{0.95}
+
+%\include{Introduction}
+%\include{chap-survey/survey}
+%\include{chap-overview/overview}
+%\include{chap-algorithms/algorithms}
+%\include{chap-scaling/scaling}
+%\include{chap-conclusion/conclusion}
+%
+\renewcommand{\baselinestretch}{1}
+\small\normalsize
+%\addtocontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{plainnat-nourl}
+\bibliography{master}
+
+
+\end{document}

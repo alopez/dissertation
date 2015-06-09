@@ -1,0 +1,79 @@
+\begin{tikzpicture}[node distance=2cm]
+
+	% this figure uses invisible nodes to make the
+	% top and bottom of the alignment links to line up,
+	% which is a little hacky.
+	\matrix (english sentence) [nodes={anchor=mid}] {
+		\node {However}; & 
+		\node{,}; & 
+		\node{the}; & 
+		\node{sky}; & 
+		\node{remained}; & 
+		\node{clear}; & 
+		\node{under}; & 
+		\node{the}; & 
+		\node{strong}; & 
+		\node{north}; & 
+		\node{wind}; & 
+		\node{.}; \\
+		\node (english however){}; & 
+		\node (english comma){}; & 
+		\node (english the){}; & 
+		\node (english sky){}; & 
+		\node (english remained){}; & 
+		\node (english clear){}; & 
+		\node (english under){}; & 
+		\node (english the){}; & 
+		\node (english strong){}; & 
+		\node (english north){}; & 
+		\node (english wind){}; & 
+		\node (english period){};\\
+	};
+
+	\matrix (chinese sentence) [nodes={anchor=mid},column sep=1.5,below of=english sentence] {
+		\node (chinese although){}; & 
+		\node (chinese north){}; & 
+		\node (chinese wind){}; & 
+		\node (chinese howls){}; & 
+		\node (chinese comma){}; & 
+		\node (chinese but){}; & 
+		\node (chinese sky){}; & 
+		\node (chinese still){}; & 
+		\node (chinese extremely){}; & 
+		\node (chinese limpid){}; & 
+		\node (chinese period){}; \\
+		\node{\zh{虽然}}; & 
+		\node{\zh{北}}; & 
+		\node{\zh{风}}; & 
+		\node{\zh{呼啸}}; & 
+		\node{\zh{,}}; & 
+		\node{\zh{但}}; & 
+		\node{\zh{天空}}; & 
+		\node{\zh{依然}}; & 
+		\node{\zh{十分}}; & 
+		\node{\zh{清澈}}; & 
+		\node{~~\zh{。}}; \\
+		\node{\em Although}; & 
+		\node{\em north}; & 
+		\node{\em wind}; & 
+		\node{\em howls}; & 
+		\node{\em ,}; & 
+		\node{\em but}; & 
+		\node{\em sky}; & 
+		\node{\em still}; & 
+		\node{\em extremely}; & 
+		\node{\em limpid}; & 
+		\node{\em .~}; \\
+	};
+
+	\draw (english however.north) -- (english however.north |- chinese  although.south);
+	\draw (english however.north)  -- (chinese  but.south);
+	\draw (english comma.north)  -- (chinese  comma.south);
+	\draw (english sky.north)  -- (chinese  sky.south);
+	\draw (english remained.north)  -- (chinese  still.south);
+	\draw (english clear.north)  -- (chinese  limpid.south);
+	\draw (english strong.north)  -- (chinese  howls.south);
+	\draw (english north.north)  -- (chinese  north.south);
+	\draw (english wind.north)  -- (chinese  wind.south);
+	\draw (english period.north) -- (english period.north |- chinese  period.south);
+\end{tikzpicture}

@@ -1,0 +1,79 @@
+\begin{tikzpicture}[node distance=2.5cm]
+	\tikzstyle{state} = [circle,draw]
+
+	% step 1
+	\node (fert start) [state] {}; 
+	\node (fert 0) [state,right of=fert start] {}; 
+	\node (fert 1) [state,right of=fert 0] {}; 
+	\node (fert 2) [state,right of=fert 1] {}; 
+	\node (fert 3) [state,right of=fert 2] {}; 
+	
+	\draw[->] (fert start) -- (fert 0) node [pos=0.5,below] {However : $\varepsilon$};
+	\draw[->] (fert 0) -- (fert 1) node [pos=0.5,below] {$\varepsilon$ : However};
+	\draw[->] (fert 1) -- (fert 2) node [pos=0.5,below] {$\varepsilon$ : However};
+	\draw[->] (fert 2) -- (fert 3) node [pos=0.5,below] {$\varepsilon$ : However};
+	\draw[->] (fert 0) .. controls +(-1,0.5) and (1,0.5) .. (fert start) node[pos=0.5,below] {$\varepsilon$ : $\varepsilon$};
+	\draw[->] (fert 1) .. controls +(-1,1.0) and (1,1.0) .. (fert start) node[pos=0.5,below] {$\varepsilon$ : $\varepsilon$};
+	\draw[->] (fert 2) .. controls +(-1,1.5) and (1,1.5) .. (fert start) node[pos=0.5,below] {$\varepsilon$ : $\varepsilon$};
+	\draw[->] (fert 3) .. controls +(-1,2.0) and (1,2.0) .. (fert start) node[pos=0.5,below] {$\varepsilon$ : $\varepsilon$};
+	\node (label 1)[anchor=east,left=3pt] at (fert start.north west) {(1)};
+
+	% step 2
+	\node (trans) [state,below of=fert 1] {};
+
+	\node (trans 1) [left of=trans,node distance=4cm,above=0.7cm] {};
+	\draw[->,rounded corners] (trans.west) .. controls +(-1,0.7) .. (trans 1.center) node[pos=0.8,below] {However : \zh{虽然}}.. controls +(1,0.5) and +(0,1.2) .. (trans.north west);
+
+	\node (trans 2) [left of=trans,node distance=4cm,below=0.7cm] {};
+	\draw[->,rounded corners] (trans.west) .. controls +(-1,-0.7) .. (trans 2.center) node[pos=0.8,above] {However : \zh{但}}.. controls +(1,-0.5) and +(0,-1.2) .. (trans.south west);
+
+	\node (trans 1) [right of=trans,node distance=4cm,above=0.7cm] {};
+	\draw[->,rounded corners] (trans.east) .. controls +(1,0.7) .. (trans 1.center) node[pos=0.8,below] {sky : \zh{天空}}.. controls +(-1,0.5) and +(0,1.2) .. (trans.north east);
+
+	\node (trans 2) [right of=trans,node distance=4cm,below=0.7cm] {};
+	\draw[->,rounded corners] (trans.east) .. controls +(1,-0.7) .. (trans 2.center) node[pos=0.8,above] {remained : \zh{依然}}.. controls +(-1,-0.5) and +(0,-1.2) .. (trans.south east);
+
+	\node (label 2) [below of=label 1] {(2)};
+
+	% step 3
+	\node (reorder start) [state,below of=fert start,node distance=6cm] {};
+	\node (reorder 1) [state,right of=reorder start,node distance=5cm] {};
+	\node (reorder 2) [state,right of=reorder 1,node distance=2cm,above=1cm] {};
+	\node (reorder 3) [state,right of=reorder 1,node distance=2cm] {};
+	\node (reorder 4) [state,right of=reorder 1,node distance=2cm,below=1cm] {};
+	\node (reorder 5) [state,right of=reorder 1,node distance=4cm,above=1.5cm] {};
+	\node (reorder 6) [state,right of=reorder 1,node distance=4cm,above=0.5cm] {};
+	\node (reorder 7) [state,right of=reorder 1,node distance=4cm,below=0.5cm] {};
+	\node (reorder 8) [state,right of=reorder 1,node distance=4cm,below=1.5cm] {};
+
+	\draw[->] (reorder start) -- (reorder 1) node [pos=0.5,above,text centered,text width=5cm] {\zh{十分} \zh{虽然} \zh{但} \zh{,} \zh{天空} \zh{依然} \zh{清澈} \zh{北} \zh{风} \zh{呼啸} \zh{。} : $\varepsilon$};
+	\draw[->] (reorder 1) ..controls +(0,1) .. (reorder 2) node [pos=0.8,above] {$\varepsilon$ : \zh{十分}};
+	\draw[->] (reorder 1) -- (reorder 3) node [pos=0.5,above] {$\varepsilon$ : \zh{虽然}};
+	\draw[->] (reorder 1) ..controls +(0,-1) .. (reorder 4) node [pos=0.8,above] {$\varepsilon$ : \zh{但}};
+
+	\draw[->] (reorder 2) ..controls +(0,0.5) .. (reorder 5) node[pos=0.7,above] {$\varepsilon$ : \zh{但}};
+	\draw[->] (reorder 2) ..controls +(1,0) .. (reorder 6) node[pos=0.3,above] {$\varepsilon$ : \zh{虽然}};
+	\draw[->] (reorder 3) ..controls +(1,0) .. (reorder 6) node[pos=0.3,above] {$\varepsilon$ : \zh{十分}};
+	\draw[->] (reorder 3) ..controls +(1,0) .. (reorder 7) node[pos=0.3,below] {$\varepsilon$ : \zh{但}};
+	\draw[->] (reorder 4) ..controls +(1,0) .. (reorder 7) node[pos=0.3,below] {$\varepsilon$ : \zh{虽然}};
+	\draw[->] (reorder 4) ..controls +(0,-0.5) .. (reorder 8) node[pos=0.7,below] {$\varepsilon$ : \zh{天空}};
+
+	\draw[->] (reorder 5) -- +(1,0.25);
+	\draw[->] (reorder 5) -- +(1,0);
+	\draw[->] (reorder 5) -- +(1,-0.25);
+
+	\draw[->] (reorder 6) -- +(1,0.25);
+	\draw[->] (reorder 6) -- +(1,0);
+	\draw[->] (reorder 6) -- +(1,-0.25);
+
+	\draw[->] (reorder 7) -- +(1,0.25);
+	\draw[->] (reorder 7) -- +(1,0);
+	\draw[->] (reorder 7) -- +(1,-0.25);
+	
+	\draw[->] (reorder 8) -- +(1,0.25);
+	\draw[->] (reorder 8) -- +(1,0);
+	\draw[->] (reorder 8) -- +(1,-0.25);
+
+	\node (label 3) [below of=label 1,node distance=6cm] {(3)};
+
+\end{tikzpicture}

@@ -1,0 +1,202 @@
+\begin{tikzpicture}[level distance=2cm,node distance=1.5cm]
+	\tikzstyle{level 1} = [sibling distance=1cm]
+
+	\tikzstyle{edge from parent} = [->,draw]
+	\node (root)[root node]{}[grow'=right]
+		child  {node (X) [active node]{}{
+			child {node (X disheartens) [inactive node]{} edge from parent node [above]{disheartens}} 
+			} edge from parent node [above]{X}}
+		child {node (it)[active node]{}{
+			child {node (it X)[active node]{}{
+				} edge from parent node [below]{X}} 
+			} edge from parent node [below]{it}}
+		;
+
+	\draw[suffix link] (X) ..controls +(-0.75,0.75) and +(0,0.75) .. (root);
+	\draw[suffix link] (it) ..controls +(-0.5,0.5) .. (root);
+	\draw[suffix link] (it X.north) -- (X.south);
+
+	\node [anchor=south,above of=X,node distance=1cm] {Queue: it X disheartens};
+	\node [anchor=north,below of=it,text centered,text width=7cm] {Case 1. Queue item not in tree, suffix node is inactive.};
+	
+	\node (root) at (6,0)[root node]{}[grow'=right]
+		child  {node (X) [active node]{}{
+			child {node (X disheartens) [inactive node]{} edge from parent node [above]{disheartens}} 
+			} edge from parent node [above]{X}}
+		child {node (it)[active node]{}{
+			child {node (it X)[active node]{}{
+				child {node (it X disheartens) [inactive node]{} edge from parent node [below]{disheartens}}
+				} edge from parent node (X label)[below]{X}} 
+			} edge from parent node [below]{it}}
+		;
+
+	\draw[suffix link] (X) ..controls +(-0.75,0.75) and +(0,0.75) .. (root);
+	\draw[suffix link] (it) ..controls +(-0.5,0.5) .. (root);
+	\draw[suffix link] (it X.north) -- (X.south);
+	\draw[suffix link] (it X disheartens.north) -- (X disheartens.south);
+
+	\node (center point) at (X label.north){};
+	\node [anchor=north,below of=center point,text centered,text width=7cm] {Result. Node added as inactive without search, nothing added to queue.};
+
+	\draw[thin,gray] (-1,-2.75) -- +(14,0);
+
+	\begin{scope}[yshift=-4.6cm]
+
+		\node (root)[root node]{}[grow'=right]
+			child {node (X)[active node]{}{
+				child {node (X it)[active node]{}{} edge from parent node [above]{it}} 
+				} edge from parent node [above]{X}}
+			child  {node (him) [active node]{}{
+				child {node (him X) [active node]{} edge from parent node [below]{X}} 
+				} edge from parent node [below]{him}}
+			;
+
+		\draw[suffix link] (X) ..controls +(-0.75,0.75) and +(0,0.75) .. (root);
+		\draw[suffix link] (him) ..controls +(-0.5,0.5) .. (root);
+		\draw[suffix link] (him X.north) -- (X.south);
+
+		\node [anchor=south,above of=X,node distance=1cm] {Queue: him X it};
+		\node [anchor=north,text centered,text width=4cm] at (1.5,-2.5) {Case 2. Queue item not in tree, suffix node is active, and pattern occurs in text.};
+
+		\matrix (him locations) [nodes={minimum width=6.5mm,minimum height=6mm,rectangle,draw},anchor=north] at (3.75,-2) {
+			\node (2) {2}; \\
+			\node (15) {15}; \\
+			\node (10) {10}; \\
+			\node (6) {6}; \\
+		};
+		\path[fill=lightgray] (him X.center) -- (2.north east) -- (2.north west) -- cycle;
+
+		\matrix (it locations) [nodes={minimum width=6.5mm,minimum height=6mm,rectangle,draw},anchor=north] at (5.25,-2) {
+			\node (0) {0}; \\
+			\node (4) {4}; \\
+			\node (8) {8}; \\
+			\node (13) {13}; \\
+		};
+
+		\path[fill=lightgray] (X it.center) -- (13.south west) -- (0.north west) -- (0.north east) -- cycle;
+		\node [anchor=south east] at (him locations.north) {$M_\mathrm{him~X}$};
+		\node [anchor=south west] at (it locations.north) {$M_\mathrm{X~it}$};
+
+		\draw[<->] (2.east) -- (4.west);
+		\draw[<->] (2.east) -- (8.west);
+		\draw[<->] (2.east) -- (13.west);
+		\draw[<->] (10.east) -- (13.west);
+		\draw[<->] (6.east) -- (8.west);
+		\draw[<->] (6.east) -- (13.west);
+
+		\draw[snake=brace,raise snake=1mm,segment amplitude=2mm] (0.north east) -- (13.south east);
+		\path (4.south east) -- +(3mm,0) coordinate (arrow start);
+
+		\matrix (result locations) [nodes={minimum width=12mm,minimum height=6mm,rectangle,draw},anchor=west,right of=it locations,node distance=2cm] {
+			\node (result top){$2,4$}; \\
+			\node {$2,8$}; \\
+			\node (result side){$2,13$}; \\
+			\node {$10,13$}; \\
+			\node {$6,8$}; \\
+			\node (result bottom){$6,13$}; \\
+		};
+		\draw[->] (arrow start) -- (result side.south west);
+
+		\node (root) at (6,0)[root node]{}[grow'=right]
+			child {node (X)[active node]{}{
+				child {node (X it)[active node]{}{} edge from parent node (it label) [above]{it}} 
+				} edge from parent node [above]{X}}
+			child  {node (him) [active node]{}{
+				child {node (him X) [active node]{}{
+					child {node (him X it) [active node] {} edge from parent node [below]{it}}
+					} edge from parent node [below]{X}} 
+				} edge from parent node [below]{him}}
+			;
+
+		\node (agenda loc) at (it label.south) {};
+		\node [anchor=south,above of=agenda loc,node distance=1cm] {Queue: him X it disheartens, him X it X him};
+
+		\draw[suffix link] (X) ..controls +(-0.75,0.75) and +(0,0.75) .. (root);
+		\draw[suffix link] (him) ..controls +(-0.5,0.5) .. (root);
+		\draw[suffix link] (him X.north) -- (X.south);
+		\draw[suffix link] (him X it.north) -- (X it.south);
+
+		\draw[snake=brace,raise snake=1mm,segment amplitude=2mm,segment aspect=0.166] (result top.north east) -- (result bottom.south east);
+		\path (result top.south east) -- +(3mm,0) coordinate (arrow start);
+		\draw[->] (arrow start) ..controls (arrow start -| him X it.south) .. (him X it.south);
+
+		\node [anchor=north,text centered,text width=5cm] at (10.5,-2.5) {Result. Compute $M_{him~X~it}$ from $M_{him~X}$ and $M_{X~it}$, store in new active node, and add subsequent patterns to queue.};
+
+		\draw[thin,gray] (-1,-5.5) -- +(14,0);
+
+	\end{scope}
+
+	\begin{scope}[yshift=-12cm]
+
+		\node (root)[root node]{}[grow'=right,level distance=1.33cm]
+			child {node (X)[active node]{}{
+				child {node (X him) [active node]{}{
+					child {node (X him and) [active node]{}{
+						} edge from parent node [above]{and}}
+					} edge from parent node [above]{him}}
+				} edge from parent node [above]{X}}
+			child  {node (and) [active node]{}{
+				child {node (and X) [active node]{}{
+					child {node (and X him)[active node]{}{
+						} edge from parent node [below]{him}}
+					} edge from parent node [below]{X}} 
+				} edge from parent node [below]{and}}
+			;
+			
+		\draw[suffix link] (X) ..controls +(-0.75,0.75) and +(0,0.75) .. (root);
+		\draw[suffix link] (and) ..controls +(-0.5,0.5) .. (root);
+		\draw[suffix link] (and X.north) -- (X.south);
+		\draw[suffix link] (and X him.north) -- (X him.south);
+		
+		\node [anchor=south,above of=X him,node distance=1cm] {Queue: and X him and};
+		\node [anchor=north,text centered,text width=4cm] at (1.5,-2) {Case 3. Queue item not in tree, suffix node is active, but pattern does not occur in text.};
+
+		\matrix (X him and locations) [nodes={minimum width=6.5mm,minimum height=6mm,rectangle,draw},anchor=north] at (5.75,-2) {
+			\node (2) {2}; \\
+		};
+
+		\matrix (and X him locations) [nodes={minimum width=12mm,minimum height=6mm,rectangle,draw},anchor=north] at (4.25,-2) {
+			\node (loc 1){$3,6$}; \\
+			\node (loc 2){$3,10$}; \\
+			\node (loc 3){$12,15$}; \\
+		};
+
+		\path[fill=lightgray] (X him and.center) -- (2.south west) -- (2.north west) -- (2.north east) -- cycle;
+		\path[fill=lightgray] (and X him.center) -- (loc 1.north east) -- (loc 1.north west) --cycle;
+
+		\node [anchor=south east] at (and X him locations.north) {$M_\mathrm{and~X~him}$};
+		\node [anchor=south west] at (X him and locations.north) {$M_\mathrm{X~him~and}$};
+
+		\draw[snake=brace,raise snake=1.35cm,segment amplitude=2mm] (loc 1.north east) -- (loc 3.south east);
+		\node [anchor=west,right=1.5cm] at (loc 2.east) {$\emptyset$};
+
+
+		\node (root) [root node] at (6,0){}[grow'=right,level distance=1.33cm]
+			child {node (X)[active node]{}{
+				child {node (X him) [active node]{}{
+					child {node (X him and) [active node]{}{
+						} edge from parent node [above]{and}}
+					} edge from parent node [above]{him}}
+				} edge from parent node [above]{X}}
+			child  {node (and) [active node]{}{
+				child {node (and X) [active node]{}{
+					child {node (and X him)[active node]{}{
+						child {node (and X him and)[inactive node]{}{
+							} edge from parent node [below]{and}}
+						} edge from parent node [below]{him}}
+					} edge from parent node [below]{X}} 
+				} edge from parent node [below]{and}}
+			;
+			
+		\draw[suffix link] (X) ..controls +(-0.75,0.75) and +(0,0.75) .. (root);
+		\draw[suffix link] (and) ..controls +(-0.5,0.5) .. (root);
+		\draw[suffix link] (and X.north) -- (X.south);
+		\draw[suffix link] (and X him.north) -- (X him.south);
+		\draw[suffix link] (and X him and.north) -- (X him and.south);
+
+		\node [anchor=north,text centered,text width=5.5cm] at (10,-2) {Result. Computation finds that pattern is not present. Add inactive node.};
+
+	\end{scope}
+
+
+\end{tikzpicture}

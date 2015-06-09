@@ -1,0 +1,77 @@
+\begin{tikzpicture}[node distance=3cm]
+	\tikzstyle{state} = [circle,draw]
+	
+	%step 1
+	\node (segment start) [state] {};
+
+	\node (segment 1) [left of=segment start,node distance=3cm,above=0.7cm] {};
+	\draw[->,rounded corners] (segment start.west) .. controls +(-0.2,0.7) .. (segment 1.center) node[pos=0.85,below] {However : However}.. controls +(1,0.5) and +(0,1.2) .. (segment start.north west);
+
+	\node (segment 2) [left of=segment start,node distance=3cm,below=0.2cm] {};
+	\draw[->,rounded corners] (segment start.west) .. controls +(-0.2,-0.2) .. (segment 2.center) node[pos=0.8,above] {, : ,}.. controls +(1,-0.5) and +(0,-0.9) .. (segment start.south west);
+
+	\node (segment 1) [right of=segment start,node distance=8cm,above=0.7cm] {};
+	\draw[->,rounded corners] (segment start.east) .. controls +(0.2,0.7) .. (segment 1.center) node[pos=0.8,below=1pt] {the sky remained clear : the\_sky\_remained\_clear}.. controls +(-1,0.5) and +(0,1.2) .. (segment start.north east);
+
+	\node (segment 2) [right of=segment start,node distance=8cm,below=0.7cm] {};
+	\draw[->,rounded corners] (segment start.east) .. controls +(0.2,-0.7) .. (segment 2.center) node[pos=0.83,above=3pt,text width=6cm,text centered] {under the strong north wind : under\_the\_strong\_north\_wind}.. controls +(-1,-0.5) and +(0,-1.2) .. (segment start.south east);
+
+	\node (label 1)[anchor=east,left=3cm] at (segment start.north west) {(1)};
+
+	%step 2
+	\node (segment start) [state,below of=segment start] {};
+
+	\node (segment 1) [right of=segment start,node distance=8cm,above=0.7cm] {};
+	\draw[->,rounded corners] (segment start.east) .. controls +(0.2,0.7) .. (segment 1.center) node[pos=0.8,below=1pt] {the\_sky\_remained\_clear : \zh{天空}\_\zh{依然}\_\zh{十分}\_\zh{清澈}}.. controls +(-1,0.5) and +(0,1.2) .. (segment start.north east);
+
+	\node (segment 2) [right of=segment start,node distance=8cm,below=0.7cm] {};
+	\draw[->,rounded corners] (segment start.east) .. controls +(0.2,-0.7) .. (segment 2.center) node[pos=0.83,above=3pt] {under\_the\_strong\_north\_wind : \zh{北}\_\zh{风}\_\zh{呼啸}}.. controls +(-1,-0.5) and +(0,-1.2) .. (segment start.south east);
+
+	\node (segment 1) [left of=segment start,node distance=3cm,above=0.7cm] {};
+	\draw[->,rounded corners] (segment start.west) .. controls +(-0.2,0.7) .. (segment 1.center) node[pos=0.85,below] {However : \zh{虽然}}.. controls +(1,0.5) and +(0,1.2) .. (segment start.north west);
+
+	\node (segment 2) [left of=segment start,node distance=3cm,below=0.2cm] {};
+	\draw[->,rounded corners] (segment start.west) .. controls +(-0.2,-0.2) .. (segment 2.center) node[pos=0.8,above] {, : ,\_\zh{但}}.. controls +(1,-0.5) and +(0,-0.9) .. (segment start.south west);
+
+	\node (label 2)[anchor=east,left=3cm] at (segment start.north west) {(2)};
+	
+	% step 3
+	\node (reorder start) [state,below of=segment 2,node distance=4cm] {};
+	\node (reorder 1) [state,right of=reorder start,node distance=6cm] {};
+
+	\node (reorder 2) [state,right of=reorder 1,node distance=4.5cm,above=2cm] {};
+	\node (reorder 3) [state,right of=reorder 1,node distance=4.5cm,above=1cm] {};
+	\node (reorder 4) [state,right of=reorder 1,node distance=4.5cm] {};
+	\node (reorder 5) [state,right of=reorder 1,node distance=4.5cm,below=1cm] {};
+	\node (reorder 6) [state,right of=reorder 1,node distance=4.5cm,below=2cm] {};
+
+	\draw[->] (reorder start) -- (reorder 1) node [pos=0.5,above,text centered,text width=6cm] {\zh{虽然} ,\_\zh{但} \zh{北}\_\zh{风}\_\zh{呼啸} \zh{天空}\_\zh{依然}\_\zh{十分}\_\zh{清澈} \zh{。} : $\varepsilon$};
+	\draw[->] (reorder 1) ..controls +(0.5,2) and +(-3.5,0) .. (reorder 2) node[pos=0.8,above] {$\varepsilon$ : \zh{虽然}};
+	\draw[->] (reorder 1) ..controls +(0.5,1) and +(-3.5,0) .. (reorder 3) node[pos=0.8,above] {$\varepsilon$ : ,\_\zh{但}};
+	\draw[->] (reorder 1) -- (reorder 4) node[pos=0.5,above] {$\varepsilon$ : \zh{北}\_\zh{风}\_\zh{呼啸}};
+	\draw[->] (reorder 1) ..controls +(0.5,-1) and +(-3.5,0) .. (reorder 5) node[pos=0.8,above=3pt] {$\varepsilon$ : \zh{天空}\_\zh{依然}\_\zh{十分}\_\zh{清澈}};
+	\draw[->] (reorder 1) ..controls +(0.5,-2) and +(-3.5,0) .. (reorder 6) node[pos=0.8,above] {$\varepsilon$ : \zh{。}};
+
+	\draw[->] (reorder 2) -- +(0.5,0.25);
+	\draw[->] (reorder 2) -- +(0.5,0);
+	\draw[->] (reorder 2) -- +(0.5,-0.25);
+
+	\draw[->] (reorder 3) -- +(0.5,0.25);
+	\draw[->] (reorder 3) -- +(0.5,0);
+	\draw[->] (reorder 3) -- +(0.5,-0.25);
+
+	\draw[->] (reorder 4) -- +(0.5,0.25);
+	\draw[->] (reorder 4) -- +(0.5,0);
+	\draw[->] (reorder 4) -- +(0.5,-0.25);
+
+	\draw[->] (reorder 5) -- +(0.5,0.25);
+	\draw[->] (reorder 5) -- +(0.5,0);
+	\draw[->] (reorder 5) -- +(0.5,-0.25);
+
+	\draw[->] (reorder 6) -- +(0.5,0.25);
+	\draw[->] (reorder 6) -- +(0.5,0);
+	\draw[->] (reorder 6) -- +(0.5,-0.25);
+
+	\node (label 3)[below of=label 2,node distance=4cm] {(3)};
+	
+\end{tikzpicture}

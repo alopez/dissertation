@@ -1,0 +1,148 @@
+\begin{tikzpicture}
+	\fboxsep3pt
+	\matrix (sentence) [nodes={text height=10pt}] at (-2,5.5){
+	\node (word 0) {it}; & 
+	\node (word 1) {makes}; & 
+	\node (word 2) {him}; & 
+	\node (word 3) {and}; & 
+	\node (word 4) {it}; & 
+	\node (word 5) {mars}; & 
+	\node (word 6) {him}; & 
+	\node (word 7) {,}; & 
+	\node (word 8) {it}; & 
+	\node (word 9) {sets}; & 
+	\node (word 10) {him}; & 
+	\node (word 11) {on}; & 
+	\node (word 12) {and}; & 
+	\node (word 13) {it}; & 
+	\node (word 14) {takes}; & 
+	\node (word 15) {him}; & 
+	\node (word 16) {off}; & 
+	\node (word 17) {.}; & 
+	\node (word 18) {\#};\\
+	\node (num 0) {0}; & 
+	\node (num 1) {1}; & 
+	\node (num 2) {2}; & 
+	\node (num 3) {3}; & 
+	\node (num 4) {4}; & 
+	\node (num 5) {5}; & 
+	\node (num 6) {6}; & 
+	\node (num 7) {7}; & 
+	\node (num 8) {8}; & 
+	\node (num 9) {9}; & 
+	\node (num 10) {10}; & 
+	\node (num 11) {11}; & 
+	\node (num 12) {12}; & 
+	\node (num 13) {13}; & 
+	\node (num 14) {14}; & 
+	\node (num 15) {15}; & 
+	\node (num 16) {16}; & 
+	\node (num 17) {17}; & 
+	\node (num 18) {18};\\
+	};
+
+	\path (num 0.south west) -- +(0mm,-3mm) coordinate (dividing point);
+	\draw[gray,thin] (dividing point) -- (dividing point -| num 18.south east);
+
+	\draw[snake=brace,segment amplitude=2mm] (word 2.north west) -- (word 4.north east) node [pos=0.5,anchor=south,above=2mm] {$2, 4$};
+	\draw[snake=brace,raise snake=10mm,segment amplitude=2mm] (word 2.north west) -- (word 8.north east) node [pos=0.5,anchor=south,above=12mm] {$2, 8$};
+	\draw[snake=brace,raise snake=18mm,segment amplitude=2mm] (word 2.north west) -- (word 13.north east) node [pos=0.5,anchor=south,above=20mm] {$2, 13$};
+	\draw[snake=brace,segment amplitude=2mm] (word 6.north west) -- (word 8.north east) node [pos=0.5,anchor=south,above=2mm] {$6, 8$};
+	\draw[snake=brace,raise snake=8mm,segment amplitude=2mm] (word 6.north west) -- (word 13.north east) node [pos=0.5,anchor=south,above=10mm] {$6, 13$};
+	\draw[snake=brace,segment amplitude=2mm] (word 10.north west) -- (word 13.north east) node [pos=0.5,anchor=south,above=2mm] {$10, 13$};
+
+	\matrix [nodes={rectangle,draw,minimum width=6.5mm,minimum height=6mm}] at (0,0){
+		\node (suffix 3) {3}; \\
+		\node (suffix 12) {12}; \\
+		\node (suffix 2)  [fill=lightgray]{2}; \\
+		\node (suffix 15) [fill=lightgray]{15}; \\
+		\node (suffix 10) [fill=lightgray]{10}; \\
+		\node (suffix 6)  [fill=lightgray]{6}; \\
+		\node (suffix 0)  [fill=gray]{0}; \\
+		\node (suffix 4)  [fill=gray]{4}; \\
+		\node (suffix 8)  [fill=gray]{8}; \\
+		\node (suffix 13) [fill=gray]{13}; \\
+		\node (suffix 1) {1}; \\
+		\node (suffix 5) {5}; \\
+		\node (suffix 16) {16}; \\
+		\node (suffix 11) {}; \\
+		%\node (suffix 9) {9}; \\
+		%\node (suffix 14) {14}; \\
+		%\node (suffix 7) {7}; \\
+		%\node (suffix 17) {17}; \\
+		%\node (suffix 18) {18}; \\
+	};
+
+	\node [fill=white,minimum width=7mm,minimum height=6mm] at (suffix 11.south) {};
+	\node [rotate=90] at (suffix 11.center) {...};
+
+
+	\node [anchor=west,xshift=3pt] at (suffix 0.east) {\colorbox{gray}{it} makes him ...};
+	\node [anchor=west,xshift=6pt] at (suffix 1.east) {makes him and it ...};
+	\node [anchor=west,xshift=3pt] at (suffix 2.east) {\colorbox{lightgray}{him} and it mars ...};
+	\node [anchor=west,xshift=6pt] at (suffix 3.east) {and it mars him ...};
+	\node [anchor=west,xshift=3pt] at (suffix 4.east) {\colorbox{gray}{it} mars him , it ...};
+	\node [anchor=west,xshift=6pt] at (suffix 5.east) {mars him , it sets ...};
+	\node [anchor=west,xshift=3pt] at (suffix 6.east) {\colorbox{lightgray}{him} , it sets him ...};
+	\node [anchor=west,xshift=3pt] at (suffix 8.east) {\colorbox{gray}{it} sets him on ...};
+	\node [anchor=west,xshift=3pt] at (suffix 10.east) {\colorbox{lightgray}{him} on and it ...};
+	\node [anchor=west,xshift=6pt] at (suffix 12.east) {and it takes him ...};
+	\node [anchor=west,xshift=3pt] at (suffix 13.east) {\colorbox{gray}{it} takes him off ...};
+	\node [anchor=west,xshift=3pt] at (suffix 15.east) {\colorbox{lightgray}{him} off . \#};
+	\node [anchor=west,xshift=6pt] at (suffix 16.east) {off . \#};
+	\node [anchor=west,xshift=6pt] at (suffix 11.east) {...};
+
+	\draw[snake=brace,segment amplitude=2mm,raise snake=1mm] (suffix 6.south west) -- (suffix 2.north west);
+	\draw[snake=brace,segment amplitude=2mm,raise snake=1mm] (suffix 13.south west) -- (suffix 0.north west) coordinate (it locations);
+	
+	\path (suffix 15.south west) --  +(-3mm,0) coordinate (him brace);
+	\path (suffix 4.south west) --  +(-3mm,0) coordinate (it brace);
+	
+	\path (suffix 8.west) -- +(-1.3,0) coordinate (it locations);
+	\path (suffix 8.west) -- +(-2.8,0) coordinate (him locations);
+	
+	\draw[->] (him brace) ..controls +(-2.5,0.0) .. (him locations);
+	\draw[->] (it brace) ..controls +(-1,0.0) .. (it locations);
+
+	\matrix (him)[inner sep=0,nodes={rectangle,draw,minimum width=6.5mm,minimum height=6mm},anchor=north] at (him locations){
+		\node (suffix 2)  {2}; \\
+		\node (suffix 15) {15}; \\
+		\node (suffix 10) {10}; \\
+		\node (suffix 6)  {6}; \\
+	};
+
+	\matrix (it)[inner sep=0,nodes={rectangle,draw,minimum width=6.5mm,minimum height=6mm},anchor=north] at (it locations){
+		\node (suffix 0)  {0}; \\
+		\node (suffix 4)  {4}; \\
+		\node (suffix 8)  {8}; \\
+		\node (suffix 13) {13}; \\
+	};
+
+	\draw[<->] (suffix 2.east) -- (suffix 4.west);
+	\draw[<->] (suffix 2.east) -- (suffix 8.west);
+	\draw[<->] (suffix 2.east) -- (suffix 13.west);
+	\draw[<->] (suffix 10.east) -- (suffix 13.west);
+	\draw[<->] (suffix 6.east) -- (suffix 8.west);
+	\draw[<->] (suffix 6.east) -- (suffix 13.west);
+	
+	\draw[snake=brace,segment amplitude=2mm,raise snake=1mm] (suffix 6.south west) -- (suffix 2.north west);
+	\path (suffix 15.south west) --  +(-3mm,0) coordinate (pairs brace);
+	\draw[->] (pairs brace) -- +(-1.5,0) coordinate (pairs locations);
+
+	\matrix (pairs) [inner sep=0,nodes={rectangle,draw,minimum width=12mm,minimum height=6mm},anchor=east] at (pairs locations){
+		\node  {$2, 4$}; \\
+		\node  {$2, 8$}; \\
+		\node  {$2, 13$}; \\
+		\node  {$10, 13$}; \\
+		\node  {$6, 8$}; \\
+		\node  {$6, 13$}; \\
+	};
+	\node [anchor=north] at (him.south) {$M_{him}$};
+	\node [anchor=north] at (it.south) {$M_{it}$};
+	\node [anchor=north] at (pairs.south) {$M_{him~X~it}$};
+
+	\node at (-6,3.5){1. Find all locations of \colorbox{lightgray}{him}.};
+	\node at (-6,2.5){2. Find all locations of \colorbox{gray}{it}.};
+	\node [text width=5.5cm,text centered] at (-6,1){3. Compare the elements of $M_{him}$ and $M_{it}$ to compute $M_{him~X~it}$.};
+
+\end{tikzpicture}

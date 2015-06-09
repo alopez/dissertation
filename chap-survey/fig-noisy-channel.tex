@@ -1,0 +1,10 @@
+\begin{tikzpicture}
+	\node [draw] (source) {$\Pe$};
+	\node [right of=source,node distance=1.5cm] (e) {$e_1^I$};
+	\node [right of=e,node distance=4cm] (f) {$f_1^J$};
+	\draw [->] (source) -- (e);
+	\draw [->,snake=snake,line after snake=1mm,line before snake=1mm] (e) -- (f);
+	\node [fill=white,right of=e,node distance=2cm] (channel) {$\Pfe$};
+	\node [anchor=south,above=2mm] at (source.north) {source};
+	\node [anchor=south,above=2mm] at (channel.north) {noisy channel};
+\end{tikzpicture}

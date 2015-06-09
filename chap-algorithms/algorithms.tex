@@ -1,0 +1,1280 @@
+\chapter{Pattern Matching for Phrases with Gaps}\label{chap:algorithms}
+
+\begin{quote}
+	{\em People who analyze algorithms have double happiness. First of all they experience the sheer beauty of elegant mathematical patterns that surround elegant computational procedures. Then they receive a practical payoff when their theories make it possible to get other jobs done more quickly and more economically.}  
+	\begin{flushright}
+		--Donald Knuth
+	\end{flushright}
+\end{quote}
+
+Phrase-based translation is an important milestone in
+statistical machine translation, but as we saw in Chapter~\ref{chap:survey},
+it is far from the final word in translation modeling.  In the last few
+years, statistical MT models have greatly diversified.
+Most new models are inspired in some way by phrase-based translation, and motivated by
+a desire to overcome its weaknesses.  Some notable examples include non-contiguous
+phrase-based models \citep{Simard:2005:hlt-emnlp}, hierarchical phrase-based
+models \citep[\textsection\ref{sec:hiero}]{Chiang:2005:acl,Chiang:2007:cl}, dependency treelet models
+\citep{Quirk:2005:acl,Quirk:2006:hlt-naacl}, and syntax-based tree-to-string
+transducer models \citep{Galley:2004:naacl,Galley:2006:acl,DeNeefe:2007:emnlp-conll}.
+
+Given the heterogeneity of these models, it is notable that they all share
+three specific characteristics.  First, like phrase-based models,
+they can translate multi-word units.  Second, unlike phrase-based models,
+they can also translate phrases with gaps---that is, multi-word
+units composed of words that are not contiguous in the source sentence.
+Finally, as a consequence of their greater expressivity, they
+all require many more rules than standard phrase-based models.  In general,
+the ruleset extracted from a corpus by any of them
+is at least an order of magnitude larger than the ruleset of a phrase-based
+model extracted from the same data.  In fact, the vast size of extracted
+rulesets is a recurring topic in the literature of these models
+\citep[see, e.g.][]{Chiang:2007:cl,DeNeefe:2007:emnlp-conll,Simard:2005:hlt-emnlp}.
+
+The size of these rulesets makes efficient scaling techniques even 
+more relevant to these models than it was to standard phrase-based models.
+However, the introduction of gaps
+poses an algorithmic challenge for translation by pattern matching.  The
+pattern matching algorithm presented in Chapter~\ref{chap:overview} depended 
+crucially on the fact that our query pattern was a contiguous string.  
+If we no longer enforce contiguity, we
+require new algorithms for pattern matching.  To the extent that phrases 
+with gaps represent the future of statistical machine translation, the 
+relevance of translation by pattern matching depends on its applicability
+to these models.  We therefore seek to develop efficient pattern matching
+algorithms for models where source phrases contain gaps.
+
+To make matters concrete, we will focus on hierarchical phrase-based
+translation \citep[\textsection\ref{sec:hiero}]{Chiang:2005:acl,Chiang:2007:cl}.  This model gives
+statistically significant improvements in BLEU score over a standard 
+phrase-based system trained on the same data.  Although we 
+consider this specific model, we emphasize
+that our pattern matching algorithms are general enough to be
+applied to any of the aforementioned models, with the proviso that the
+source-driven rule extraction algorithm is model-specific and must
+be redeveloped for each case.
+
+With this mind, we can now succinctly state the problem of this
+chapter: {\em Given an input sentence, efficiently find and extract
+all hierarchical phrase-based translation rules for that 
+sentence in the training corpus.}
+
+We first review the relevant aspects of 
+hierarchical phrase-based translation
+(\textsection\ref{sec:hierarchical-translation}).  
+We show that the obvious solution using 
+state-of-the-art pattern matching algorithms is 
+hopelessly inefficient (\textsection\ref{sec:problem}).  We then describe a series 
+of algorithms to address this inefficiency (\textsection\ref{sec:solution}).
+Our algorithms reduce computation time by two orders of magnitude, making
+the approach feasible and enabling us to replicate state-of-the-art
+translation accuracy (\textsection\ref{sec:hiero-results}).
+
+
+\section{Hierarchical Phrase-Based Translation (Redux)}\label{sec:hierarchical-translation}
+
+\setlength{\fboxsep}{1pt}
+\newcommand{\nt}[2]{#1_{\framebox{\scriptsize #2}}}
+
+Hierarchical phrase-based 
+translation is based on synchronous context-free grammar
+(\textsection\ref{sec:hiero}).  The lexicalized translation rules of
+this grammar may contain a single nonterminal symbol, denoted $X$.  
+We will use $a$, $b$, $c$ and $d$ to denote terminal symbols, and $u$,
+$v$, and $w$ to denote (possibly empty) sequences of these terminals.
+We will additionally use $\alpha$ and $\beta$ to denote
+(possibly empty) sequences containing both terminals and nonterminals.
+A translation rule is written $X \rightarrow \alpha / \beta$.
+This rule states that a span of the input matching $\alpha$ is replaced
+by $\beta$ in translation.  We require that $\alpha$ and $\beta$ contain
+an equal number (possibly zero) of coindexed nonterminals.  
+An example rule with coindexes is
+$X \rightarrow u\nt{X}{1}v\nt{X}{2}w / u'\nt{X}{2}v'\nt{X}{1}w'$.  When
+discussing only the source side of such rules, we will leave out
+the coindexes.  For instance, the source side of the above rule will be written
+$uXvXw$.\footnote{In the canonical representation of the grammar,
+source-side coindexes always appear in numerical order, so source phrases
+are unambiguous despite this simplification.}
+
+The pattern matching problem for this model is illustrated in 
+Figure~\ref{fig:hiero-query} (cf. Figure~\ref{fig:pb-query}).  
+If arbitrary sequences of terminals
+and nonterminals may be rules, then the number of source phrases
+that cover a sentence is exponential in sentence length.  This is
+especially problematic for training the model.  \citet{Chiang:2007:cl}
+employs several heuristics to limit the size of the extracted grammar.
+
+\figpreamble
+\begin{figure}
+	\figfontsize{
+	\begin{center}
+		\input{chap-algorithms/fig-hiero-query}
+	\end{center}}
+	\figpostamble
+\caption[Example input sentence and resulting query pattern for hierarchical phrase-based translation.]{Example input sentence and resulting query 
+patterns for hierarchical phrase-based translation.  There
+are many more query patterns than for a standard phrase-based system
+on the same sentence (cf. Figure~\ref{fig:pb-query}).}
+\label{fig:hiero-query}
+\end{figure}
+
+\begin{itemize}
+	\item The span of any extracted rule in either the source or target text is restricted to some small value (henceforth $\maxphrasespan$).
+	\item The number of nonterminal symbols in a rule is restricted to some small value (henceforth $\maxnts$).
+	\item The total number of terminal and nonterminal symbols in the source side of a rule is restricted to some small value (henceforth $\maxphraselen$).\footnote{\citet{Chiang:2007:cl} does not explicitly restrict the number of target-side symbols, making $\maxphrasespan$ the {\em de facto} limit.}
+%	\item Nonterminals are required to have a {\em minimum} span in the training data (henceforth $\mingapsize$).  If the span is one word, then nearly every word could be subtracted to form a nonterminal.  Therefore we can decrease the grammar size by increasing the minimum span.
+\end{itemize}
+
+\noindent Our algorithms are parameterized for these constraints
+so they don't depend in any way on specific values for them.  We explore
+this in greater detail in Chapter~\ref{chap:scaling}.
+
+Abstractly, translation by pattern matching can be applied
+using the same generic algorithm that we used for the standard
+phrase-based model.
+
+\begin{enumerate}
+	\item Enumerate all source phrases that are licensed by the model.
+	\item Query the source training text for each source phrase.
+	\item Extract and score the translations of each source phrase.
+	\item Decode using the scored translation rules.
+\end{enumerate}
+
+\noindent Implementing these steps for the hierarchical phrase-based
+model requires new algorithms for pattern matching and phrase extraction.
+
+\section{The Pattern Matching Problem for Hierarchical Phrases}\label{sec:problem}
+
+As with standard phrase-based models, we can search for a contiguous source
+phrase $\alpha=u$ using a suffix array (\textsection\ref{sec:suffix_arrays}).
+However, source phrases in form $\alpha=uXv$ or $\alpha=uXvXw$ complicate matters.
+We say that the contiguous sequences $u$ and $v$ are {\em collocated}
+because in order to form a rule they must occur in the same sentence.  
+However, they do not need to be adjacent.
+The nonterminal symbol $X$ can match an arbitrary (non-empty) sequence 
+of text.  Binary search will not work for these patterns.  
+
+Consider a query pattern $uXv$.
+All instances of this pattern contain the prefix $u$.
+Therefore, they all occur in the range of the suffix array containing 
+suffixes with the prefix $u$.  However, unlike the case of contiguous
+query patterns, there is no guarantee of a one-to-one mapping between
+suffixes in this range and occurrences of the query pattern
+(Figure~\ref{fig:discontig-sa}).
+First, it is possible that a single suffix prefixed by $u$
+contains multiple instances of the search pattern.  For instance, the 
+suffix $uavv\#$ matches the query pattern twice.  In the first match $X$ spans
+$a$.  In the second $X$ spans $av$.  Second, it is possible that
+non-matching suffixes are interspersed with matching suffixes.  Suppose that
+our text has suffixes $uav...\#$, $ub\#$, and $ucv...\#$.  These suffixes are in
+lexicographical order, yet only the first and third suffix contain the
+query pattern.
+
+\figpreamble
+\begin{figure}
+	\figfontsize{
+	\begin{center}
+		\input{chap-algorithms/fig-discontiguous-lookup-problem}
+	\end{center}}
+	\figpostamble
+	\caption[Matches in a suffix array fragment for the discontiguous query pattern $him~X~it$.]{Matches in a suffix array fragment for the
+	discontiguous query pattern $him~X~it$.  For discontiguous patterns,
+	there  is no guarantee of a
+	one-to-one correspondence between occurrences of the
+	query pattern and suffixes in the same range of the suffix array
+	(cf. Figure~\ref{fig:suffix-array}).}\label{fig:discontig-sa}
+\end{figure}
+
+We will need another algorithm to find the source rules containing
+at least one $X$ surrounded by nonempty sequences of terminal symbols.
+
+\subsection{Baseline Algorithm}\label{sec:baseline}
+
+In the pattern-matching literature, words spanned
+by the nonterminal symbols of Chiang's grammar are called 
+{\em don't cares} and a nonterminal symbol in a query pattern
+that matches a sequence of don't cares is
+called a {\em variable length gap}.  The search problem for
+patterns containing these gaps is a variant on
+approximate pattern matching \citep{Navarro:2001:csur}, a fundamental
+algorithmic problem in string processing that is central
+to bioinformatics and information retrieval.
+
+The best algorithm for
+pattern matching with variable-length gaps using a suffix 
+array is a recent algorithm by 
+\citet[henceforth RILMS]{Rahman:2006:cocoon}.  It works on a pattern
+$\alpha = w_1 X w_2 X ... w_{K_\alpha}$ consisting of $K_\alpha$
+contiguous subpatterns $w_1, w_2, ... w_{K_\alpha}$, each separated
+by a gap.  We wish to find all occurrences of $\alpha$ in text $T$.
+The algorithm is straightforward.  We first 
+locate each contiguous subpattern $w_k$ in the suffix array.
+This takes $O(|w_k| + \log |T|)$ time.  The result of 
+the query is a set $M_{w_k}$ of indices at which $w_k$
+occurs in the source text.  To find
+occurrences of $w_1 X w_2$, we search for all
+pairs $(m_1, m_2) \in M_{w_1} \times M_{w_2}$
+such that $m_1$ and $m_2$ are in the same sentence
+and meet the phrase length restrictions.  
+The result set $M_{w_1 X w_2}$ must be 
+the complete list of locations for $w_1 X w_2$.  We repeat
+the computation for all pairs $w_1 X...X w_{k-1}$ and $w_k$.
+
+Consider the pattern {\em him X it}.  Lookup
+on the example suffix array (Figure~\ref{fig:suffix-array}) is 
+illustrated in Figure~\ref{fig:baseline-algorithm}.
+
+\begin{enumerate}
+	\item Look up all occurrences of $him$.  These are enumerated in the
+	suffix array range $[2,5]$.  The result is $M_{him} = \{2, 15, 10, 6\}$.
+	\item Look up all occurrences of $it$.  These are enumerated in the suffix
+	array range $[6,9]$.  The result is $M_{it} = \{0, 4, 8, 13\}$.
+	\item\label{item:compare} Compare elements of the first set with elements
+	of the second to find instances of the pattern.  In this simplified example,
+	there is only one sentence, so the result set is $M_{him~X~it} = \{(2, 4), (2, 8), (2, 13), (6, 8), (6, 13), (10, 13)\}$.
+	With a maximum span of ten, the instance $(2, 13)$ would not qualify as a
+	match.
+\end{enumerate}
+
+\noindent  Note that the result is a set of tuples.  The $k$th 
+element of each tuple is an index matching some occurrence of the $k$th 
+subpattern of the query pattern in the source text.  The location of query pattern $\alpha$
+with $K_\alpha$ subpatterns is therefore a $K_\alpha$-tuple.  
+This is necessary to distinguish between cases in which multiple
+matches share subpatterns.  There are several examples of
+this in Figure~\ref{fig:baseline-algorithm}, including the matches 
+$(2,4)$, $(2,8)$, and $(2,13)$, which share a subpattern located at position 2.
+The list $M_{w_1 X ... X w_{K_\alpha}}$
+of occurrences is a set of these $K_\alpha$-tuples.
+
+The comparison step of the algorithm (step~\ref{item:compare})
+is difficult because the set of locations that we find in the 
+suffix array is not in numeric order---it is in lexicographical order.
+Performing this step efficiently will be a key problem for our algorithms.
+A na\"{i}ve implementation would simply compare all of the elements
+in each set, giving an overall lookup complexity of 
+$O(\sum_{k=1}^{K_\alpha} \left[|w_k| + log |T|\right] + \prod_{k=1}^{K_\alpha} |M_{w_k}|)$
+for a single pattern $\alpha = w_1 X ... X w_{K_\alpha}$.  
+To perform the comparison efficiently, 
+RILMS inserts the elements of $M_{w_k}$ into 
+an efficient data structure called a {\em stratified tree}
+\citep{emde-boas:1977:mst}.\footnote{Often known in the literature as a
+{\em van Emde Boas tree} or {\em van Emde Boas priority queue}.}  
+This is a priority queue in which the
+operations {\sc insert} and {\sc next-element} require $O(\log \log |T|)$ 
+time.\footnote{Note that the dependence is on the size of the text, 
+not the number of elements of the set.  $\log \log |T|$ is a very mild term---
+on our corpus of 27 million words (\textsection\ref{sec:overview-results}) it is five.  
+We can think of it as a very small corpus-specific constant.}
+To find collocations, the algorithm runs the {\sc next-element} query
+for each element of $M_{w_1 X ... X w_{k-1}}$.  This step is iterated
+until it returns a value that is
+in a different sentence or outside the phrase length constraints.
+Therefore, the total running time for an algorithm to find all contiguous
+subpatterns and compute their collocations is
+$O(\sum_{k=1}^K \left[ |w_k| + log |T| + |M_{w_k}| \log \log |T| \right])$.
+
+\figpreamble
+\begin{figure}
+	\figfontsize{
+	\begin{center}
+		\input{chap-algorithms/fig-baseline-algorithm}
+	\end{center}}
+	\figpostamble
+	\caption{Illustration of baseline pattern matching algorithm for query pattern $him~X~it$.}
+	\label{fig:baseline-algorithm}
+\end{figure}
+
+We can improve on RILMS
+using a variation on the idea of hashing.  We exploit
+the fact that our large text is actually a collection
+of relatively short sentences, and that collocated patterns must
+occur in the same sentence in order to be considered a rule.  Therefore, we can use the
+sentence number (henceforth $\sentnum$) of each subpattern occurrence 
+as a kind of hash key.\footnote{Our current implementation encodes
+the sentence number in a distinct length-$|T|$ array.  This is an inefficient
+use of memory but enables constant-time access.  We are currently 
+investigating alternative encodings that use less memory while
+preserving constant-time access.}  We
+create a hash table whose size is equal to the number of
+sentences in our training corpus.  Each location of
+the partially matched pattern $w_1 X ... X w_k$
+is inserted into the hash bucket with the matching sentence
+number.  To find collocated patterns $w_{k+1}$, we
+probe the hash table with each of the $|M_{w_{k+1}}|$
+locations for that subpattern.  When we find a non-empty 
+bucket, we compare the element with all elements in the 
+bucket to find matches licensed by
+the phrase length constraints. Theoretically, the worst case 
+for this algorithm occurs when all elements of both sets
+resolve to the same hash bucket, and we must compare
+all elements of one set with all elements of the other 
+set.  This leads to a worst case complexity
+of $O(\sum_{k=1}^{K_\alpha} \left[|w_k| + log |T|\right] + \prod_{k=1}^{K_\alpha} |M_{w_k}|)$.  
+However, for real language data the average complexity
+will be much closer $O(\sum_{k=1}^K \left[|w_k| + log |T| + |M_{w_k}|\right])$, 
+since on average any hash probes will return fewer than one match.
+
+
+\subsection{Analysis}\label{sec:baseline-analysis}
+
+It is instructive to compare the complexity of our baseline
+algorithm to the algorithm for the
+contiguous case.  For a contiguous pattern $w$, the complexity of lookup
+is $O(|w| + log |T|)$.  For a discontiguous pattern 
+$\alpha = w_1 X w_2 X ... w_{K_\alpha}$, this complexity is
+$O(\sum_{k=1}^{K_\alpha} \left[|w_k| + log |T| + |M_{w_k}|\right])$.
+Note that the first two terms are analogous to 
+the terms for the contiguous case.  However, 
+for discontiguous lookup the complexity includes the additional 
+term $\sum_{k=1}^{K_\alpha} |M_{w_k}|$, which depends on the number
+of occurrences of each subpattern.  This term dominates complexity
+if there is even one moderately frequent subpattern.
+
+To make matters concrete, consider our 27 million word training corpus 
+(\textsection\ref{sec:overview-results}).  The three most frequent unigrams
+occur 1.48 million, 1.16 million and 688 thousand times---the first two 
+occur on average more than once per sentence.  In the worst case,
+looking up a contiguous phrase containing any number and combination
+of these unigrams requires no more than $25$ comparison
+operations.  In contrast, the worst case scenario for a
+pattern with a single gap, bookended on either side by the
+most frequent word, requires over thirteen million operations using RILMS
+and over two million using our improved baseline based on hashing.
+A single frequent unigram in an input sentence
+is enough to cause noticeable slowdowns, since
+it can appear as a subpattern of up to 84 hierarchical rules even using
+the tight grammar length restrictions of \citet{Chiang:2005:acl,Chiang:2007:cl},
+which we enumerate in \textsection\ref{sec:hiero-results}.
+
+This is not our sole worry.  The full pattern matching
+algorithm must take into account all of the queries needed for
+a given model.  As we've seen, the number of queries is quadratic in the case of
+a phrase-based model, and exponential in the case of a hierarchical
+phrase-based model with no length restrictions.  Even with very tight 
+length restrictions, the number of 
+queries will be much higher than for the standard phrase-based 
+system.  This only compounds the problem of computationally
+expensive queries.
+
+To analyze the cost empirically, we implemented an efficient
+version of our baseline algorithm as compiled C code using Pyrex and 
+measured CPU time on the NIST 2003 test set under the grammar length restrictions
+of \citet[\textsection\ref{sec:hiero-results}]{Chiang:2007:cl}.  
+The average per-sentence query time
+was 221.4 seconds (3.7 minutes), excluding extraction, 
+scoring, and decoding.  By comparison,
+per-sentence lookup time for the phrase-based model was
+0.0094 seconds (\textsection\ref{sec:overview-results})---
+four orders of magnitude faster.
+
+\section{Solving the Pattern Matching Problem for Hierarchical Phrases}\label{sec:solution}
+
+Clearly, looking up patterns in this way is not practical.
+A detailed analysis confirmed the two predicted causes of 
+computational expense.
+
+\begin{enumerate}
+	\item The number of query patterns is large.  With length restrictions, 
+	the hierarchical phrase-based model generates an average of 
+	2825 query patterns per sentence.  By comparison, a standard
+	phrase-based model with an equivalent maximum phrase length
+	(five) generates only 137 query patterns per sentence.
+
+	\item Cumulative lookup time was dominated by a very small 
+	fraction of the queries (Figure~\ref{fig:cumulative-baseline-timing}).  
+	As expected, further analysis showed that these expensive 
+	queries all involved at least one very frequent subpattern
+	(Figure~\ref{fig:scatterplot-baseline}).
+	In the worst cases a single pattern lookup required several 
+	tenths of a second.
+\end{enumerate}
+
+\figpreamble
+\begin{figure}
+	\figfontsize{
+	\begin{center}
+		\input{chap-algorithms/fig-cumulative-baseline-timing}
+	\end{center}}
+	\figpostamble
+	\caption{Cumulative time required for collocation computations.}
+	\label{fig:cumulative-baseline-timing}
+\end{figure}
+
+\figpreamble
+\begin{figure}
+	\figfontsize{
+	\begin{center}
+		\input{chap-algorithms/fig-scatterplot-baseline-timing}
+	\end{center}}
+	\figpostamble
+	\caption{Size of input sets ($|M_1^k| + |M_{k+1}|$) compared with time required to compute collocation from the two sets using the baseline algorithm (double logscale).}
+	\label{fig:scatterplot-baseline}
+\end{figure}
+
+\noindent Our solution addresses both of these problems.  We
+introduce an algorithm for efficient enumeration that performs 
+lossless pruning of unnecessary queries
+(\textsection\ref{sec:efficient-enumeration}).  We also introduce
+several strategies to reduce the cost of individual queries
+(\textsection\ref{sec:efficient-lookup})
+
+\subsection{Efficient Enumeration}
+\label{sec:efficient-enumeration}
+
+Although we found 2895 query patterns per sentence,
+the average sentence length is just over 29 words.
+Obviously, the query patterns are highly overlapping.
+We can exploit this to reduce computational expense.
+
+\subsubsection{The Zhang-Vogel Algorithm}\label{sec:zhang-vogel}
+
+\citet{Zhang:2005:eamt} show an efficient algorithm
+for contiguous phrase searches in a suffix array.  It is based
+on the observation that the prefix $u$ of any possible
+source phrase $ua$ is itself a possible source
+phrase.  They exploit this fact to reduce the amount of work required
+to search for $ua$.  The set of suffixes with prefix $ua$ is
+a subset of the set of suffixes with prefix $u$.
+Therefore, if we search for occurrences of
+$u$ before searching for occurrences of $ua$, we can
+restrict the binary search for $ua$ to the suffix array range
+containing suffixes prefixed by $u$.
+If there are no matches for $u$, we
+don't need to search for $ua$ at all.  
+This optimization improves efficiency for
+phrase search, although the improvement is
+modest since search for contiguous phrases
+is already very fast
+(\textsection\ref{sec:overview-results}).\footnote{
+In fact, the results reported 
+in the previous chapter incorporate both
+this optimization and one we introduce in 
+\textsection\ref{sec:zv-improvements}.}
+However, the opportunity for improvement in discontiguous search
+is much greater.  
+
+Extension to hierarchical
+phrases is straightforward.  A hierarchical
+phrase $\alpha{}a$ can only occur in $T$ if its
+prefix $\alpha$ occurs in $T$.  The actual pattern matching
+algorithm for hierarchical phrases is not as simple
+as binary search in a suffix array, so this doesn't
+enable an obvious search improvement as it does for
+contiguous phrases.  However, it does allow us to rule out the 
+existence of $\alpha{}a$ if the search for $\alpha$
+fails.  This prunes out many searches
+that are guaranteed to be fruitless.
+
+\subsubsection{Prefix Trees and Suffix Links}\label{sec:zv-improvements}
+
+The Zhang-Vogel optimization is closely related to
+prefix trees.  Recall that the prefix tree implementation of a phrase
+table encodes all legal source phrases in an unminimized 
+finite state automaton (\textsection\ref{sec:phrase-tables}).  
+We store target phrases and scores
+at the node associated with a source phrase.
+Representing hierarchical rules in the prefix tree
+requires no special modification.  Since our nonterminal
+and terminal alphabets are mutually exclusive, we simply
+treat the nonterminal $X$ as any other edge 
+label.\footnote{Conveniently, the decoder used in our
+experiments \citep{Chiang:2007:cl} already encodes its
+grammars in a prefix tree.  The implementation is 
+similar to one described by \citet{Klein:2001:acl}.  We
+simply augment this representation with information
+needed by our algorithms.}
+
+We implement the Zhang-Vogel algorithm using
+a prefix tree, which we construct for each source
+sentence.  In fact, we can think of the pattern
+matching operation itself as an augmentation of edge 
+traversal in a prefix tree.  Suppose that we are at a
+node representing source phrase $\alpha$, and we want to 
+find translation rules for source phrase $\alpha{}a$.  
+If the node representing $\alpha$ does not have
+an outgoing $a$-edge, we first query the source text for
+phrase $\alpha{}a$.  If the query succeeds, we add an
+$a$-edge to a new node containing the newly extracted
+phrase pairs and scores.  If the search fails, we still
+add the $a$-edge, but we mark the new node as {\em inactive},
+indicating that the text contains no phrases with this prefix.
+In this way, the algorithm builds a prefix
+tree representing every query pattern licensed by our grammar
+for the input sentence, except patterns whose prefixes were
+not present in the training data (Figure~\ref{fig:prefix-tree}).
+Now suppose that a source phrase occurs multiple times
+in the sentence (this frequently happens with determiners for example).
+The first occurrence is treated as described above, but
+for all subsequent occurrences we simply traverse the existing edge.
+We check the flag on the node to see if it is active or inactive,
+telling us whether the previous
+search was successful.  Recall that the prefix tree is 
+sentence-specific.  We discard it and build a new tree for 
+each sentence, enabling our decoder to run indefinitely 
+without exhausting main memory.
+
+\figpreamble
+\begin{figure}
+	\figfontsize{
+	\begin{center}
+		\input{chap-algorithms/fig-prefix-tree}
+	\end{center}}
+	\figpostamble
+	\caption{Portion of the prefix tree for tree for our example input (Figure~\ref{fig:hiero-query}).}
+	\label{fig:prefix-tree}
+\end{figure}
+
+We can improve on the Zhang-Vogel algorithm.
+The existence of phrase $a\alpha{}b$ in a text
+guarantees more than the existence of its prefix
+$a\alpha$.  It also guarantees the existence of
+its suffix $\alpha{}b$.  If $\alpha{}b$ doesn't exist,
+we don't need search for $a\alpha{}b$ at all.  
+Furthermore, note that unless $\alpha=X$, $a\alpha$ and
+$\alpha{}b$ must share at least one word.  This means
+we can reduce the search to cases where $a\alpha$ and 
+$\alpha{}b$ overlap, and their starting indices will differ
+by exactly one.  To see why this
+is useful, consider a phrase $abXcd$.   In our 
+baseline algorithm, we would search for $ab$ and 
+$cd$, and then perform a computation to see whether these
+subphrases were collocated within an elastic window.
+However, if we instead use the locations of $abXc$ and $bXcd$ as the basis
+of the computation, we gain two advantages.  First, the
+number of elements in each set is likely to be smaller than
+in the former case.  This is not guaranteed to be true, but
+it will be true in the vast majority of cases.\footnote{
+To see why this isn't always the case, consider an example.
+Suppose that our subpatterns are $ab$ and $cd$, and the 
+text contains the substring $ababdcdcd$.  Although each
+subpattern occurs only twice, the combined pattern $abXcd$
+occurs four times.}
+Second, the computation becomes
+simpler because there is no need to check whether
+the patterns cooccur within a variable-length window.
+It is sufficient to see whether they match exactly,
+except for the first index, which should differ by 
+exactly one.  For this to work, we need
+access to the set of locations for both the
+prefix and the suffix.  Note that any
+pattern $\alpha$ can be the prefix or suffix of numerous source
+phrases.  To facilitate reuse of the
+occurrence set $M_\alpha$, we cache it at the
+corresponding prefix tree node.  The full algorithm
+for computing occurrences $a\alpha{}b$ given all
+occurrences of $a\alpha$ and $\alpha{}b$ will be described
+in \textsection\ref{sec:collocation-algorithm}.
+
+To access suffixes in constant time, we augment
+the prefix tree with {\em suffix links}.  A suffix link 
+is a pointer from a node representing $a\alpha{}b$ to a node 
+representing its suffix $\alpha{}b$ (Figure~\ref{fig:prefix-tree-suffix-links}).
+Via this connection, we can immediately check to see if 
+the node has been marked inactive.  If it is, we know that a query
+for the $\alpha{}b$ (or recursively, one of its suffixes) previously
+failed, and we don't need to query for $a\alpha{}b$ at all, since
+we know that it will not be found.\footnote{Note that the suffix 
+of a one-symbol phrase is the empty string $\epsilon$, represented 
+by the root node of the prefix tree.  The reader may notice 
+that $a\alpha$ is undefined when the prefix pattern is 
+$\epsilon$.  We define an auxiliary state $\perp$, 
+following \citet{Ukkonen:1995:algorithmica}.  The suffix link from root
+points to $\perp$, while $\perp$ is connected to the root node 
+by all symbols in the alphabet.  Therefore, when $\alpha = \epsilon$,
+$a\alpha = \perp$.  Following the $a$-edge from $\perp$ 
+returns us to the root.  This simplifies much of the following
+algorithmic discussion without requiring the enumeration of several
+corner cases.}
+
+\figpreamble
+\begin{figure}
+	\figfontsize{
+	\begin{center}
+		\input{chap-algorithms/fig-prefix-tree-suffix-links}
+	\end{center}}
+	\figpostamble
+	\caption[A fragment of the prefix tree augmented with suffix links.]{A fragment of the prefix tree (Figure~\ref{fig:prefix-tree}) augmented with suffix links (dotted).}
+	\label{fig:prefix-tree-suffix-links}
+\end{figure}
+
+As we described above, the prefix tree acts as a cache 
+for phrases that occur multiple
+times in a source sentence.  In these cases, we simply
+traverse the already-constructed edge, without needing to
+query the text for the phrase or extract its translations.  Depending on our usage
+scenario and available memory, we could extend the caching 
+behavior even further by retaining part or all of the tree 
+between sentences instead of building a new tree for 
+each sentence.  For instance, a least recently used (LRU)
+strategy for cache pruning may improve translation speed for whole
+documents without exhausting memory.  Though impractical for online settings,
+in batch translation we could simply keep the
+entire tree for the duration of the decoding process.  This
+allows us to reuse queries that were already performed for
+previous sentences, potentially leading to further speedups.
+
+\subsubsection{Special Cases for Phrases with Gaps}\label{sec:special-cases}
+
+The model permits gaps at the beginning or end of a hierarchical phrase.
+For instance, it permits source phrases $Xu$ or $uX$ or even $XuX$.
+However, even if our model disallowed such source phrases, they would still
+be prefixes or suffixes of valid sources sources, and therefore must
+appear in the prefix tree.  Each of these phrases corresponds to a 
+unique path in the prefix tree, although 
+for pattern matching purposes they are all identical to phrase $u$.
+An analogous situation occurs with the patterns $XuXv$, $uXvX$, 
+and $uXv$.  There are two cases that we are concerned with.
+
+Consider a pattern $\alpha = X\beta$.  The path to its prefix 
+tree node contains the $X$-edge originating at the root
+node.  All paths containing this edge form a special subtree.
+Note that $\alpha$ occurs in the text at the same locations as
+$\beta$, although from the perspective of the translation model
+it is a different phrase.  Therefore, we don't actually
+need to query the training text to find $\alpha$.  If the node 
+representing $\beta$ is active, we create an active node 
+for $\alpha$ and set $M_\alpha = M_\beta$.  If the node 
+representing $\beta$ is inactive, we create an inactive node for $\alpha$.
+
+Now consider pattern $\alpha = \beta{}X$.  For pattern matching purposes,
+this pattern is identical to its prefix $\beta$.
+Therefore, if we successfully find $\beta$, we automatically
+add an outgoing $X$-edge from its corresponding node,
+provided that $\beta{}X$ is licensed  
+by the length restrictions.  Again we set $M_\alpha = M_\beta$.
+
+Note that both special cases occur for a pattern in the form $\alpha = X\beta{}X$.
+
+\subsubsection{Putting It All Together: Prefix Tree Generation Algorithm}\label{sec:prefix-trees}
+
+Given an input sentence, our algorithm (Listing~\ref{alg:prefix-tree})
+generates the corresponding prefix tree for its query patterns breadth-first.
+We maintain a queue of items, each consisting of a
+query pattern, its span in the input, and a pointer to the node 
+corresponding to its prefix.  The queue is initialized
+with all patterns containing a single terminal symbol.  When we
+pop a pattern from the queue, there are two cases.  If the
+corresponding edge exists in the prefix tree,
+we traverse it.  Otherwise, we query the source text for 
+the pattern.  Irrespective of the query's success, 
+we create a node for the pattern in the tree, and
+mark it active or inactive as appropriate.  For found patterns, we 
+cache either the endpoints of the suffix array range containing
+the phrase (if it is contiguous), or the full list of locations at which
+the phrase is found (if it is discontiguous).\footnote{As a practical
+matter, we can also store the scored translation rules after we extract
+them (\textsection\ref{sec:hierarchical-extraction}).}
+We add to the queue any query patterns 
+containing one more terminal for which the pattern is a prefix.  
+This guarantees that all patterns containing $m$ terminals
+are processed before any patterns containing $m+1$ terminals,
+which is sufficient to guarantee that any pattern is processed
+after both its suffix and prefix.
+
+To query the text for pattern $a\alpha{}b$, we 
+call function \queryfunc\ (\textsection\ref{sec:collocation-algorithm}), providing 
+the sets of prefix and suffix locations
+$M_{a\alpha}$ and $M_{\alpha{}b}$ as parameters.  $M_{a\alpha}$ is
+cached at the node corresponding to the prefix $a\alpha{}$, 
+which is an element of the item popped from the queue.
+To find the node corresponding to the suffix $\alpha{}b$, 
+we first follow the suffix link from the node representing 
+the prefix, $a\alpha$.  This leads us to a node representing
+$\alpha$.  From this node we follow the $b$-edge, which
+leads to the node representing $\alpha{}b$.  This 
+gives us constant-time access to both prefix and suffix information.
+If the suffix node is inactive, we can
+mark the new node inactive without a query.
+Some common cases are illustrated
+in Figure~\ref{fig:prefix-tree}.
+
+\algorithm{Prefix Tree Lookup}{
+	\label{alg:prefix-tree}
+	\input{chap-algorithms/alg-prefix-tree}
+}
+
+\figpreamble
+\begin{figure}
+	\figfontsize{
+	\begin{center}
+		\input{chap-algorithms/fig-prefix-tree-recursive-cases}
+	\end{center}}
+	\figpostamble
+	\caption{Illustration of several recursive cases in the prefix tree construction algorithm.}
+	\label{fig:prefix-tree-recursive-cases}
+\end{figure}
+
+
+\input{chap-algorithms/sec-intersect-algorithm}
+
+
+\subsubsection{Precomputation of Inverted Indices for Frequent Subpatterns}\label{sec:inverted-indices}
+
+Sorting the matchings of a contiguous pattern $w$
+adds an $O(|M_w| \log\log |T|)$ term to 
+query complexity.  This is fine for infrequent patterns. However,
+if $|M_w|$ is large, this may be quite expensive.
+
+We can circumvent this problem by precomputing an 
+{\em inverted index} \citep{Zobel:2006:csur}.
+This is simply the list $|M_w|$ in sorted order.  
+It can be computed in one pass over the data.  The memory consumption
+of inverted indices for all $n$-grams up to some maximum
+$n$ requires $n |T|$ space, so using this strategy for all
+$n$-grams is infeasible.
+Instead we precompute the inverted index only for the most
+frequent $n$-grams.\footnote{We identify the most frequent patterns
+in a single traversal over the {\em longest common prefix (LCP) array},
+an auxiliary data structure of the suffix array 
+\citep{Manber:1993:sicomp}.  We only need the LCP array for this purpose, 
+so we compute it once offline using a fast algorithm due to 
+\citet{Kasai:2001:cpm}.} For less frequent $n$-grams, we continue to 
+generate the index on the fly using stratified trees as before.
+
+\subsection{Faster Pattern Matching for Individual Query Patterns}
+\label{sec:efficient-lookup}
+
+The complexity of the comparison step in 
+both the baseline algorithm and our merge algorithm is
+linear in the number of occurrences of each subpattern.
+Therefore, the main improvement we have introduced so far is
+reduction in the number of unnecessary lookups.  The cost
+of pattern matching for a single query pattern is mostly unchanged, and as
+we have seen, it can be very expensive whenever
+the query pattern contains a frequent subpattern.
+However, there is a silver lining.
+Recall that patterns follow a Zipf distribution 
+(Figure~\ref{fig:ngram-histogram}), so
+the number of pattern types that cause the problem
+is quite small.  The vast majority of patterns
+are rare.  Therefore, our solution focuses on patterns 
+with one or more frequent subpatterns.  
+To simplify matters, we focus on the intermediate computation
+for pattern $w_1 X ... X w_k$.  This requires us
+to compute the collocation of subpatterns $w_1 X ... X w_{k-1}$ 
+and $w_{k}$.  There are three cases.
+
+\begin{itemize}
+	\item If both patterns are rare, we use the \queryfunc\ algorithm (\textsection\ref{sec:collocation-algorithm}).
+
+	\item If one pattern is frequent and the other is rare, we
+	use an algorithm whose complexity depends mainly on the 
+	frequency of the rare pattern (see \textsection\ref{sec:double-binary}, below).  
+	It can also be used for pairs of rare patterns when one 
+	pattern is much rarer than the other.
+
+	\item If both patterns are frequent, we resort to a precomputed
+	intersection (see \textsection\ref{sec:precomputation}, below).  We are
+	not aware of any algorithms to substantially improve the efficiency
+	of this computation at runtime, but the result can be precomputed
+	in a single pass over the text.\footnote{We combine this with the
+	precomputation of inverted indices (\textsection\ref{sec:inverted-indices}).}
+\end{itemize}
+
+\subsubsection{Fast Intersection via Double Binary Search}\label{sec:double-binary}
+
+For collocations of frequent and rare patterns, 
+we use a fast set intersection method for sorted
+sets called {\em double binary search}
+\citep{Baeza-Yates:2004:cpm}.  Suppose that we
+wish to intersect a sorted set $Q$ with a much larger
+sorted set $Q'$.  Note that we can compute this 
+intersection efficiently by performing a binary 
+search in $Q'$ for each element of $Q$.  The
+complexity is $\Theta(|Q| \log |Q'|)$, which
+is better than the \intersectfunc\ algorithm complexity
+of $O(|Q| + |Q'|)$ if $Q \ll Q'$.  Note
+that this is a tight bound.
+
+Double binary search takes this idea a step further.  
+It performs a binary search in $Q'$ for the median
+element of $Q$.  Whether or not the element is found,
+the result divides both sets into two pairs of smaller sets that
+can be processed recursively.  In many cases, one of the
+recursive inputs will be empty, and we don't need to
+do any work at all.  This results in a loose
+bound on complexity, $O(|Q| \log |Q'|)$, and the
+average case is often much better than this
+\citep{Baeza-Yates:2004:cpm,baeza-yates:2005:spire}.
+We can modify the algorithm to compute collocation rather 
+than intersection, just as we did for the merge
+algorithm (\textsection\ref{sec:collocation-algorithm}).
+
+If $|Q| \log |Q'| < |Q| + |Q'|$ then the performance
+is guaranteed to be sublinear in $|Q| + |Q'|$.  Because the 
+bound is loose, it is often sublinear
+even if $|Q| \log |Q'|$ is somewhat larger than $|Q| + |Q'|$.
+In our implementation we simply
+check for the condition  $\lambda |Q| \log |Q'| < |Q| + |Q'|$ to decide
+whether we should use double binary search or the merge algorithm.
+This check is applied in the recursive cases as well as for the 
+initial inputs.  The variable $\lambda$ can be adjusted
+for speed.  We explore possible values for it empirically in 
+\textsection\ref{sec:algorithmic-timing-results}.
+
+\subsubsection{Precomputation of Collocations}\label{sec:precomputation}
+
+\figpreamble
+\begin{figure}
+	\figfontsize{
+	\begin{center}
+		\input{chap-algorithms/fig-precomputation-algorithm}
+	\end{center}}
+	\figpostamble
+	\caption{Illustration of the precomputation algorithm.}
+	\label{fig:precomputation-algorithm}
+\end{figure}
+
+Double binary search only helps if one subpattern is infrequent.
+If both subpatterns are frequent, there is no clever algorithm
+to efficiently compute their collocation at runtime.  Therefore, we
+precompute these expensive collocations
+in a single pass over the text.  As input, our algorithm requires the 
+identities of the $k$ most frequent contiguous patterns.~
+We then iterate over the corpus.  Whenever a pattern from the 
+list is seen, we push a tuple consisting of its identity and 
+current location onto a queue.  Whenever 
+the oldest item on the queue falls on the edge of the 
+maximum span window with respect to the current 
+position, we pop it from the queue and compute its
+collocation with all other items in the queue (subject to any gap
+length constraints) .  We repeat this step for every item 
+that falls outside the window.  At the end of each
+sentence, we compute collocations for any remaining
+items in the queue and then empty it.  The algorithm is
+illustrated in Figure~\ref{fig:precomputation-algorithm}.
+
+Our precomputation includes the most frequent $n$-gram
+subpatterns.  Most of these are unigrams, though
+we found $5$-grams among the $1000$ most
+frequent patterns.  We precompute the locations of
+source phrase $uXv$ for any pair $u$ and $v$ that both
+appear on this list.  There is also a small number of
+patterns $uXv$ that are very frequent.
+We cannot easily obtain a list of these in advance, but
+we observe that they always consist of a pair $u$ and $v$ of patterns
+from near the top of the frequency list.  Therefore
+we also precompute the locations of patterns $uXvXw$
+in which both $u$ and $v$ are among these super-frequent
+patterns (all unigrams), treating this as the collocation of the 
+frequent pattern $uXv$ and frequent pattern $w$.  We
+also compute the analogous case for $uXvXw$ when 
+$v$ and $w$ are super-frequent.
+
+\subsubsection{Putting it all Together: The Root \queryfunc\ algorithm}
+
+We've described several algorithms for pattern matching on text,
+including suffix array lookup for contiguous patterns 
+(\textsection\ref{sec:suffix_arrays}) and multiple
+algorithms for discontiguous queries including the \queryfunc\ algorithm
+(\textsection\ref{sec:collocation-algorithm}),
+double binary search (\textsection\ref{sec:double-binary}), and cache retrieval
+(\textsection\ref{sec:precomputation}).  To make clear when each
+of these algorithms is called, we include here the root \queryfunc\
+algorithm that dispatches to the appropriate algorithm for each case
+(Listing~\ref{alg:query-main}).  This
+is the only \queryfunc\ called for all phrase queries from the prefix tree
+algorithm (Listing~\ref{alg:prefix-tree}).
+
+\algorithm{The root \queryfunc\ algorithm}{
+	\label{alg:query-main}
+	\input{chap-algorithms/alg-query-root}
+}
+
+\section{Source-Driven Phrase Extraction}\label{sec:hierarchical-extraction}
+
+\figpreamble
+\begin{figure}
+	\figfontsize{
+	\begin{center}
+		\input{chap-algorithms/fig-base-phrase-extraction}
+	\end{center}}
+	\figpostamble
+	\caption{Examples of hierarchical base phrase extraction.}
+	\label{fig:base-phrase-extraction}
+\end{figure}
+
+\figpreamble
+\begin{figure}
+	\figfontsize{
+	\begin{center}
+		\input{chap-algorithms/fig-extended-phrase-extraction}
+	\end{center}}
+	\figpostamble
+	\caption{Examples of extended hierarchical phrase extraction.}
+	\label{fig:extended-phrase-extraction}
+\end{figure}
+
+Our pattern matching algorithms
+are general.  They can be used for many models that use discontiguous
+source phrases.  Once we find all occurrences of a source
+phrase, we are faced with the task of extracting its 
+translations.  This is a model-specific problem, which we turn
+to in this section with a focus on hierarchical phrase-based
+translation.
+
+\citet{Chiang:2005:acl,Chiang:2007:cl}
+bootstraps hierarchical phrase extraction from standard phrase
+extraction using a simple algorithm.  First, all phrases
+meeting the standard phrase extraction heuristic are found 
+(up to the maximum phrase span).
+Recall that this heuristic requires words in the
+phrase pair to be unaligned to words outside the phrase pair.
+Next, phrase pairs that are completely contained within larger 
+phrase pairs are subtracted to form gaps.
+
+We augment the source-driven extraction algorithm 
+(\textsection\ref{sec:source-driven-rule-extraction}) 
+following the same principle.  We first find the smallest 
+reflected source span containing our source phrase.  This 
+acts as the main phrase from which smaller phrases are subtracted.  
+We then take any parts of the source span
+corresponding to gaps in our query pattern, and subtract them
+from the large phrase pair.  
+
+There are a few subtleties.  
+Consider a query pattern $\alpha$.  This is not
+the only source phrase that matches a given location in the text.
+Query patterns $X\alpha$, $\alpha{}X$, and $X\alpha{}X$ also match
+the location (provided that they are licensed by the length restrictions).  
+We want to extract all of these variants.  This
+requires some modifications.  Recall that in the basic algorithm, 
+extraction failed if the reflected source span did not match the original source span.
+Suppose that we have found $\alpha$ in a particular span, and the
+reflected source span includes some words to the left of $\alpha$.
+In the basic algorithm, this prevents extraction.  However,
+in the hierarchical model, we can interpret the reflected source span as 
+$X\alpha$, provided that the new words in the source span 
+form a valid phrase pair with words in the target span.  
+Therefore, we modify the algorithm so that
+it adds these new words as a gap.  For each gap in the reflected
+source span, including those that were part of the original
+query, we check to see whether they form a valid phrase under
+the previous definition (Figure~\ref{fig:base-phrase-extraction}).
+
+We are not quite done.  For each occurrence of source phrase
+$\alpha$, we must check to see whether $X\alpha$, $\alpha{}X$, 
+and $X\alpha{}X$ can be extracted.  This implies that a span
+of words adjacent to the right or left of the phrase forms 
+a valid phrase whose target span is adjacent to the target
+span of $\alpha$.  The length of this span is unimportant,
+as long as the combined span is less than the maximum phrase
+span.  Therefore, we initialize the span to a length of one, %$\mingapsize$, 
+expand away from $\alpha$ by iteratively reflecting the 
+span until a fixpoint is reached
+(Figure~\ref{fig:extended-phrase-extraction}).  If the 
+final span combined with the main span is less than
+$\maxphrasespan$, then we extract the new phrase pair.
+We repeat this step for $X\alpha$, $\alpha{}X$, and $X\alpha{}X$.
+ 
+In order to exactly replicate the grammars in \citet{Chiang:2007:cl}, 
+we check several additional constraints.
+
+\begin{itemize}
+	\item That the number of nonterminal symbols in a rule is no more than $\maxnts$.
+	\item That the total number of terminal and nonterminal symbols in a rule is no more than $\maxphraselen$.
+	\item That the span of neither source nor target phrase is more than $\maxphrasespan$.
+%	\item That the span of any nonterminal is no less than $\mingapsize$.
+	\item That the source phrase contain at least one aligned terminal.
+	\item That all phrases are tight, that is, the edge words of both
+	the main phrase and the aligned phrases must be aligned.  Our implementation
+	also allows us to relax this restriction (we will examine this in
+		\textsection\ref{sec:extraction-heuristics}).
+\end{itemize}
+
+One final detail is required to complete our algorithm.  \citet{Chiang:2007:cl}
+uses the following strategy to count each extracted phrase: for each main
+phrase, a count of one is distributed uniformly over all possible phrases
+that can be formed from it via subtraction.  We did not want to enumerate
+all possible phrases for each span, as many of them would not be source phrases
+in the current input sentence. Therefore our method diverges 
+on this detail.  We assign a count of one to each source span.  
+Note that under the loose heuristic, it is possible to extract multiple target
+phrases for each source phrase.  In this case we distribute the count uniformly
+over them.
+
+\section{Results}\label{sec:hiero-results}
+
+Our experimental decoder is Hiero
+\citep{Chiang:2007:cl}, an implementation of the hierarchical
+phrase-based translation model written in a 
+combination of Python and Pyrex.  For our baseline
+experiments using direct representation, we employ
+a modified version of this decoder \citep{Dyer:2007:iwslt} 
+that implements the grammar as an external prefix tree 
+\citep{Zens:2007:hlt-naacl}.
+
+Our algorithms are implemented in Pyrex as extensions of
+our phrase-based implementation 
+(\textsection\ref{sec:overview-results}).\footnote{Our 
+implementation generates mostly compiled code, so
+it is substantially faster than initial 
+results reported in \citet{Lopez:2007:emnlp-conll}, which
+were obtained using a pure Python implementation.  In order to conduct
+a fair comparison, we also reimplemented the baseline algorithm 
+in the same way.  It should be noted, however, that there 
+is still room for increased speed in all algorithms via
+an optimized native C implementation.}  This allows us to reuse much 
+of the suffix array code.  In fact, both our standard and 
+hierarchical phrase-based decoders can be run from the
+same memory-mapped representation of the training data and alignment, 
+though the hierarchical decoder requires additional data files to 
+handle precomputation collocations and inverted indices.
+
+As with the standard phrase-based model, we wished to 
+see if hierarchical phrase-based translation by pattern matching is a viable
+replacement for direct representation.  For this purpose, we
+adhere to the restrictions described by \citet{Chiang:2007:cl} for rules
+extracted from the training data.  We emphasize again that
+our algorithms do not depend in any way on these
+specific values.  We will relax several of these 
+restrictions in Chapter~\ref{chap:scaling}.
+
+\begin{itemize}
+	\item Rules can contain at most two nonterminals.
+	\item The source side of a rule can contain at most five symbols, which may be a mix of terminals and nonterminals.\footnote{\citet{Lopez:2007:emnlp-conll} restricted the source side to five {\em terminal} symbols, irrespective of nonterminals.  The differs from the present restriction, which is identical to \citet{Chiang:2007:cl} and results in a smaller grammar.}
+	\item Rules can span at most ten words in either training or test data.
+	\item Nonterminals must span at least two words.
+	\item Adjacent nonterminals are disallowed in the source side of a rule.
+\end{itemize}
+
+\noindent Expressed more economically, we say that our goal is to
+search for a source phrase $\alpha$ in the form $u$, $uXv$, or $uXvXw$, where
+$1 \leq |\alpha| \leq 5$, $1 \leq |u|$, $1 \leq |v|$, and $1 \leq |w|$.
+
+Our experimental scenario is identical to the one for our
+phrase-based system, including all data as well as optimization
+and evaluation scripts (\textsection\ref{sec:overview-results}).
+Therefore the results are directly comparable.
+As before, we optimize every system configuration separately
+using MERT \citep[\textsection\ref{sec:minimum-error-rate-training};][]{Och:2003:acl}.
+
+\subsection{Timing Results}\label{sec:algorithmic-timing-results}
+
+Our work included several distinct algorithmic enhancements.
+
+\begin{itemize}
+	\item A prefix tree-based enumeration strategy that prunes many unnecessary queries 
+		(\textsection\ref{sec:efficient-enumeration}).
+	\item Precomputed inverted indices to avoid sorting lists of locations for frequent patterns 
+		(\textsection\ref{sec:inverted-indices}).
+	\item Double binary search to compute collocations between frequent and infrequent patterns 
+		(\textsection\ref{sec:double-binary}).
+	\item Precomputed collocations for pairs of frequent patterns 
+		(\textsection\ref{sec:precomputation}).
+\end{itemize}
+
+\begin{table}
+	\input{chap-algorithms/fig-timing-results}
+	\caption{Timing results for different combinations of algorithms (seconds per sentence), not including extraction or decoding time.}
+	\label{table:hiero-timing-results}
+\end{table}
+
+For precomputation of both collocations and inverted indices,
+we chose to use the 1000 most frequent patterns.  For precomputation
+of collocations involving super-frequent patterns 
+(\textsection\ref{sec:precomputation}), we use
+the 10 most frequent patterns.  For double binary search,
+the $\lambda$ parameter (\textsection\ref{sec:double-binary}) 
+was set to one.
+
+Double binary search and both precomputation optimizations 
+were implemented as extensions of the prefix tree algorithm, 
+but are otherwise independent
+of each other.  In order to measure their respective
+contributions, we ran the system using several different 
+combinations of optimizations.  Per-sentence query time, 
+excluding extraction and decoding, is reported
+in Table~\ref{table:hiero-timing-results}.  The full
+complement of optimizations reduces the amount of computation
+from 221.4 seconds per sentence in the baseline to a mere
+0.97 seconds per sentence, an improvement of over two
+orders of magnitude.  We find from examining the various
+combinations that each algorithm is important to achieving
+the overall result, though the most critical pieces 
+seem to be the precomputed collocations and inverted
+indices.  Adding double binary search to these
+optimizations reduces the query
+time by 58\% absolute.  However, its contribution to 
+overall time reduction is minor in all settings.
+In contrast, preliminary results
+\citep{Lopez:2007:emnlp-conll} suggested that
+it played a more important role in algorithmic
+improvements.  This may reflect differences in the
+relative cost of operations in the our implementation
+platforms (Python versus C/Pyrex). \citet{Sanders:2007:alenex} 
+suggest that the cost of recursive function calls in 
+the double binary algorithm impede performance 
+in efficient compiled implementations.
+
+To study the performance of the double binary algorithm
+more closely, we experimented with the $\lambda$ parameter
+used as a threshold to determine when the algorithm should
+be used.  With the previous implementation \citep{Lopez:2007:emnlp-conll},
+we found that tuning this parameter yielded substantial
+differences in computation time.
+We turned on all optimizations and varied only this
+parameter.  The results, given in Table~\ref{table:lambda},
+show that this parameter had very little effect on performance
+in this implementation.
+
+\begin{table}
+	\begin{center}
+	\input{chap-algorithms/table-lambda}
+	\caption{Effect of double binary $\lambda$ parameter on per-sentence query time.}
+	\label{table:lambda}
+	\end{center}
+\end{table}
+
+Recall that our prefix tree could be used as a cache in the
+case of batch translations.  To study the impact of this,
+we ran the decoder using the prefix tree as a full cache.
+We found that this only improved the per-sentence query
+time to 0.93 seconds versus 0.97 seconds without caching.
+It is interesting to note that caching performs a very
+similar function to our precomputed indices and collocations.
+We were curious to see whether caching could simulate these
+functions, so we disabled them and ran using the cache instead.
+Results are in Figure~\ref{fig:caching-results}.  We
+found that query times were extremely slow for the first
+one hundred sentences, but afterwards, they converged
+towards query times using our optimizations.  We also
+found that memory consumption grew over time.
+This highlights two important features of the 
+precomputation optimizations.
+First, they prevent slow processing of the early inputs.  
+Second, their overall memory consumption profile is stable.  In 
+contrast, with full caching memory consumption continues to grow
+indefinitely, which is unsuitable for large batch
+or online scenarios.  We conclude that our optimizations
+enable more flexibility than a simple caching approach.  However,
+we note that it may still be possible to combine our optimizations
+with partial caching (such as an LRU strategy) to achieve further
+speedups.
+
+\figpreamble
+\begin{figure}
+	\begin{center}
+		\input{chap-algorithms/fig-caching-results}
+	\end{center}
+	\figpostamble
+	\caption{Effect of caching on average and per-sentence lookup time and memory use.}
+	\label{fig:caching-results}
+\end{figure}
+
+Finally, we observed that much of the gain from 
+precomputation seemed to occur with very frequent patterns.
+To test this, we ran experiments using precomputed collocations
+and inverted indices for only the 100 most frequent patterns.
+We found that the cost in memory use was reduced by nearly half.
+In trade, per-sentence query time increased by 67\%, but in
+absolute terms the increase was less than a second.
+
+\begin{table}
+	\begin{tabular}{ccc}
+		Number of frequent patterns & memory use & query time \\ \hline
+		1000 & 2.1G & 0.97 \\
+		100 & 1.1G & 1.62\\
+	\end{tabular}
+	\caption[Effect of precomputation on memory use and processing time]
+	{Effect of precomputation on memory use and processing time.  Here we show the memory requirement of the entire system ({\em sans} language model), including all data structures on the training data.}
+	\label{fig:memory-usage}
+\end{table}
+
+
+
+\subsection{Translation Quality Results}\label{sec:hiero-translation-results}
+
+We measured translation accuracy the same way that
+we did for our phrase-based system.  It is important to note that
+the baseline hierarchical model uses a slightly different feature
+set \citep{Chiang:2007:cl}.
+
+\begin{itemize}
+	\item A source-to-target phrase translation probability.
+	\item A target-to-source phrase translation probability.
+	\item A source-to-target lexical weight.
+	\item A target-to-source lexical weight.
+	\item A language model feature.
+	\item A word count feature.
+	\item A phrase count feature only for nonlexicalized rules (i.e. a rule containing no terminal symbols).
+	\item A phrase count feature for lexicalized rules.
+\end{itemize}
+
+\noindent We did not use any special translation
+modules for numbers, dates, names, and bylines.  Therefore,
+we leave out the associated features used by \citet{Chiang:2007:cl}.
+
+We again study the effect of sampling and the effect of 
+losing the baseline target-to-source feature, and we again noticed
+during development that the phrase count features did not
+correlate with accuracy.  Therefore, we tested the effect of
+leaving out these features.  The results on a baseline system
+using direct representation are given in Table~\ref{table:hiero-baselines}.
+None of the differences were statistically significant.  This
+confirms that neither the the target-to-source translation
+probability nor the phrase penalties are essential to the system.
+Therefore, we run the remaining experiments without the 
+phrase penalties.  By design, we must leave out the target-to-source
+probability.
+
+\begin{table}
+	\begin{center}
+	\begin{tabular}{lc}
+		Configuration & BLEU \\ \hline
+		baseline with standard eight features & 30.7 \\
+		baseline without target-to-source translation feature & 30.5 \\
+		baseline without target-to-source translation or phrase count features & 30.6 \\
+		baseline without phrase count feature & 30.7 \\
+	\end{tabular}
+	\end{center}
+	\caption{Baseline system results compared with systems missing one or more features.}
+	\label{table:hiero-baselines}
+\end{table}
+
+Results for translation by pattern matching are given in 
+Table~\ref{table:hiero-sampling}.  As with the phrase-based
+system, we find that we can match our baseline system 
+results with a sampling size between two and three hundred.
+Minor improvements obtained with larger sample sizes were
+not statistically significant.  For results reported in 
+the remainder of this dissertation, we use a sample
+size of 300.
+
+\begin{table}
+	\begin{center}
+		\input{chap-algorithms/table-hiero-sampling}
+	\end{center}
+	\caption{Effect of different sampling sizes on per-sentence times for query, extraction, and scoring and translation accuracy.}
+	\label{table:hiero-sampling}
+\end{table}
+
+As before, we find that extraction adds significant time
+to the overall speed.  This is partly an artifact of 
+our implementation, which scans all alignment links for a sentence
+in order to compute the target span and its reflection.  To
+improve efficiency, we could design an alignment data structure
+that only stores the indices of the rightmost and leftmost aligned words for 
+each source and target word.  This representation would enable
+random access, since the number of tokens would be equal to
+the size of the text, and thus its indexes would correspond.
+However, we are able to replicate the results of a direct representation
+using quite a small sample size.
+
+\section{Conclusion}\label{sec:algorithms-conclusions}
+
+The innovations described in this chapter solve a computationally
+challenging puzzle of efficient pattern matching with discontiguous
+phrases.  We believe this is intrinsically
+interesting from an algorithmic perspective.
+However, our main interest is that it enables us to apply translation
+by pattern matching to practically any MT model, provided 
+that model-specific rule extraction algorithms are developed.  
+In the next chapter, we will show that our algorithms facilitate
+streamlined experimentation with hierarchical models, and that
+we can improve hierarchical phrase-based translation in a
+way that is not practical with a direct representation.
+
+
+

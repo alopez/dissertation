@@ -1,0 +1,53 @@
+\begin{tikzpicture}[level distance=2.5cm]
+	\tikzstyle{edge from parent} = [->,draw]
+	\tikzstyle{level 1} = [sibling distance=5cm]
+	\tikzstyle{level 2} = [sibling distance=3cm]
+	\tikzstyle{level 3} = [sibling distance=1cm]
+	\tikzstyle{level 4} = [sibling distance=1cm]
+	\clip (-0.2,-4.25) rectangle (15,6);
+	\node (a legend)[active node] at (10,-3) {}; \node (a legend text)[anchor=west] at (a legend.east) {active node};
+	\node (i legend)[inactive node] at (10,-3.5){}; \node (i legend text) [anchor=west] at (i legend.east) {inactive node};
+	\path (a legend.north west) -- +(-3pt,3pt) coordinate (legend box top);
+	\draw [gray,thin](legend box top) rectangle (i legend text.south east);
+	\node [root node]{}[grow'=right]
+		child {node [active node]{} edge from parent node [below=2.5cm,left=0.7cm]{it}} 
+		child {node [inactive node]{} edge from parent node [right]{persuades}} 
+		child {node [active node]{}{
+			child {node [active node]{}{
+				child [sibling distance=2cm]{node [active node]{}{
+					child {node [inactive node]{} edge from parent node [above=1mm]{disheartens}} 
+					child {node [active node]{}{
+						child {node [active node]{} edge from parent node [above]{him}} 
+						} edge from parent node [below]{X}} 
+					} edge from parent node [above=1mm]{it}}
+				child {node [active node]{}{
+					child {node [active node]{} edge from parent node [above]{him}} 
+					child {node [inactive node]{} edge from parent node [below]{disheartens}} 
+					} edge from parent node [below]{X}}
+				} edge from parent node [above=1mm]{and}}
+			child {node [active node]{}{
+				child {node [active node]{}{
+					child {node [inactive node]{} edge from parent node [above]{disheartens}} 
+					child {node [active node]{}{
+						child {node [active node]{} edge from parent node [above]{him}} 
+						} edge from parent node [below]{X}} 
+					} edge from parent node [above]{it}}
+				child {node [inactive node]{} edge from parent node [above=4mm,right=1mm]{disheartens}} 
+				child {node [active node]{} edge from parent node [below]{him}} 
+				} edge from parent node [below]{X}}
+			} edge from parent node [above=3mm]{him}} 
+		child {node [active node]{}{
+			child  [sibling distance=2cm] {node [active node]{}{
+				child {node [inactive node]{} edge from parent node [above=1mm]{disheartens}} 
+				child {node [active node]{}{
+					child {node [active node]{} edge from parent node [above]{him}} 
+					} edge from parent node [below]{X}} 
+				} edge from parent node [above]{it}}
+			child  [sibling distance=2cm]  {node [active node]{}{
+				child {node [active node]{} edge from parent node [above]{him}} 
+				child {node [inactive node]{} edge from parent node [below]{disheartens}} 
+				} edge from parent node [below]{X}}
+			} edge from parent node [below=3mm]{and}} 
+		child {node [inactive node]{} edge from parent node [right]{disheartens}} 
+		child {node [active node]{} edge from parent node [above=2.5cm,left=0.7cm]{X}}; 
+\end{tikzpicture}

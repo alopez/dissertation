@@ -1,0 +1,51 @@
+\noindent {\bf Function} {\sc Query\_Root}
+
+\noindent {\bf Input:} pattern $a\alpha{}b$; one of the following: suffix array indices low $\ell_{a\alpha}$ and high $h_{a\alpha}$ if $\alpha=uX$, sorted prefix matchings $M_{a\alpha}$ otherwise; suffix array indices low $\ell_{\alpha{}b}$ and high $h_{\alpha{}b}$ if $\alpha=Xu$, sorted prefix matchings $M_{\alpha{}b}$ otherwise.
+
+\begin{algorithmic}[1]
+
+	\If {$\alpha = u$} \Comment {$\alpha$ is a contiguous pattern}
+		\State \Return {\Call{Suffix-Array-Lookup}{$SA_F, a\alpha{}b, \ell_{a\alpha}, h_{a\alpha}$}}
+	\Else \Comment {$\alpha$ is a discontiguous pattern}
+		\If {$\alpha=uX$} \Comment {prefix is a contiguous pattern}
+			\State $M_{a\alpha} \leftarrow$  \Call{Sort\_Matchings}{$a\alpha, \ell_{a\alpha}, h_{a\alpha}$}
+		\EndIf
+		\If {$\alpha=Xu$} \Comment {suffix is a contiguous pattern}
+			\State $M_{\alpha{}b} \leftarrow$ \Call{Sort\_Matchings}{$\alpha{}b, \ell_{\alpha{}b}, h_{\alpha{}b}$}
+		\EndIf
+		\If {$M_{a\alpha{}b}$ has been precomputed}
+			\State Retrieve $M_{a\alpha{}b}$ from cache of precomputations
+		\Else
+			\If {$|M_{a\alpha}| < |M_{\alpha{}b}|$ and $\lambda |M_{a\alpha}| \log |M_{\alpha{}b}| < |M_{a\alpha}| + |M_{\alpha{}b}|$}
+				\State $M_{a\alpha{}b} \leftarrow $ \Call{Query\_Double\_Binary}{$M_{a\alpha}, M_{\alpha{}b}$}
+			\ElsIf {$|M_{\alpha{}b}| < |M_{a\alpha}|$ and $\lambda |M_{\alpha{}b}| \log |M_{a\alpha}| < |M_{\alpha{}b}| + |M_{a\alpha}|$}
+				\State $M_{a\alpha{}b} \leftarrow $ \Call{Query\_Double\_Binary}{$M_{a\alpha}, M_{\alpha{}b}$}
+			\Else
+				\State $M_{a\alpha{}b} \leftarrow $ \Call{Query\_Intersect}{$M_{a\alpha}, M_{\alpha{}b}$}
+			\EndIf
+		\EndIf
+		\State \Return $M_{a\alpha{}b}$
+	\EndIf
+\end{algorithmic}
+
+~
+
+\noindent {\bf Function} {\sc Sort\_Matchings}
+
+\noindent {\bf Input:} pattern $\alpha$, suffix array indices $\ell$ and $h$
+\begin{algorithmic}[1]
+	\If {inverted index $M_\alpha$ has been precomputed}
+		\State \Return{precomputed $M_\alpha$ from cache}
+	\Else
+		\State Let $S$ be a stratified tree
+		\State $M_\alpha \leftarrow \emptyset$
+		\For {$k$ from $\ell$ to $h$}
+			\State \Call{Insert}{$SA_F[k], S$}
+		\EndFor
+		\State $k \leftarrow $ \Call{Next\_Element}{$-1, S$}
+		\While {$k \neq -1$}
+			\State \Call{Append}{$k, M_\alpha$}
+		\EndWhile
+		\State \Return{$M_\alpha$}
+	\EndIf
+\end{algorithmic}

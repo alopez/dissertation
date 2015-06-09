@@ -1,0 +1,13 @@
+\begin{tabular}{ccccc}
+	Subpatterns & Nonterminals & Max Pattern & BLEU & Remark\\ \hline
+	1 & 0 & $u$ & 26.3 & monotone \citep[cf.][]{Chiang:2007:cl}\\
+	-- & -- & -- & 29.4 & Moses, no lexicalized reordering \\
+	-- & -- & -- & 30.7 & Moses with lexicalized reordering \\
+	1 & 1 & $uX,Xu$ & 30.2 & lexicalized reordering equivalent\\
+	1 & 2 & $XuX$ & 30.0 & lexicalized reordering equivalent\\
+	2 & 1 & $uXv$ & 30.5 \\
+	2 & 2 & $uXvX,XuXv$ & 30.8 \\
+	3 & 2 & $uXvXw$ & 30.9 & Hiero \citep{Chiang:2005:acl,Chiang:2007:cl}\\
+	4 & 3 & $uXvXwXy$ & 30.9 \\
+	5 & 4 & $uXvXwXyXz$ & 30.8 \\
+\end{tabular}

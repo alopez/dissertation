@@ -1,0 +1,141 @@
+\begin{tikzpicture}
+	\tikzstyle{state} = [draw,fill=white]
+	\tikzstyle{uncovered} = [scale=0.4,circle,draw]
+	\tikzstyle{covered} = [uncovered,fill=black]
+	\tikzstyle{word 1} = [uncovered]
+	\tikzstyle{word 2} = [uncovered]
+	\tikzstyle{word 3} = [uncovered]
+	\tikzstyle{word 4} = [uncovered]
+	\tikzstyle{word 5} = [uncovered]
+	\tikzstyle{word 6} = [uncovered]
+	\tikzstyle{word 7} = [uncovered]
+	\tikzstyle{word 8} = [uncovered]
+	\tikzstyle{word 9} = [uncovered]
+	\tikzstyle{word 10} = [uncovered]
+	\tikzstyle{word 11} = [uncovered]
+
+	\newcommand{\searchitem}[3]{
+		\matrix (#1) [state,anchor=south,above=3pt] at (#3) {
+			\node[minimum height=12pt]{#2}; \\
+			\node (center) [word 6] {}; 
+			\node (cover) [anchor=west,word 7] at (center.east) {}; 
+			\node (cover) [anchor=west,word 8] at (cover.east) {}; 
+			\node (cover) [anchor=west,word 9] at (cover.east) {}; 
+			\node (cover) [anchor=west,word 10] at (cover.east) {}; 
+			\node (cover) [anchor=west,word 11] at (cover.east) {}; 
+			\node (cover) [anchor=east,word 5] at (center.west) {}; 
+			\node (cover) [anchor=east,word 4] at (cover.west) {}; 
+			\node (cover) [anchor=east,word 3] at (cover.west) {}; 
+			\node (cover) [anchor=east,word 2] at (cover.west) {}; 
+			\node (cover) [anchor=east,word 1] at (cover.west) {}; \\
+		};
+	}
+
+	\path (0,0) coordinate (stack 1);
+	\path (4.5,0) coordinate (stack 2);
+	\path (9,0) coordinate (stack 3);
+
+	\node [anchor=south,rectangle,minimum height=5.5cm,minimum width=2.25cm,fill=lightgray] at (stack 1) {};
+	\node [anchor=south,rectangle,minimum height=5.5cm,minimum width=2.25cm,fill=lightgray] at (stack 2) {};
+	\node [anchor=south,rectangle,minimum height=5.5cm,minimum width=2.25cm,fill=lightgray] at (stack 3) {};
+
+
+	\searchitem{start}{$\varepsilon$}{stack 1}
+
+	\tikzstyle{word 1} = [covered]
+	\searchitem{item 1}{Although}{stack 2}
+	\searchitem{item 2}{However}{item 1.north}
+
+	\tikzstyle{word 1} = [uncovered]
+	\tikzstyle{word 7} = [covered]
+	\searchitem{item 3}{sky}{item 2.north}
+	
+	\tikzstyle{word 7} = [uncovered]
+	\tikzstyle{word 1} = [covered]
+	\tikzstyle{word 2} = [covered]
+	\searchitem{item 4}{north}{stack 3}
+	\searchitem{item 5}{northern}{item 4.north}
+
+	\tikzstyle{word 7} = [covered]
+	\tikzstyle{word 1} = [uncovered]
+	\searchitem{item 6}{north}{item 5.north}
+
+	\tikzstyle{word 2} = [uncovered]
+	\tikzstyle{word 8} = [covered]
+	\searchitem{item 7}{remained}{item 6.north}
+
+	\tikzstyle{word 7} = [uncovered]
+	\tikzstyle{word 8} = [uncovered]
+	\tikzstyle{word 2} = [covered]
+	\tikzstyle{word 3} = [covered]
+	\searchitem{item 8}{wind}{item 7.north}
+
+
+	
+	\draw[->] (start.east) -- (start.east -| item 1.west) node [pos=0.6,above] {1: Although};
+	\draw[->] (start.east) ..controls +(1,0.5) and +(-3,0) .. (item 2.west) node [pos=0.8,above] {1: However};
+	\draw[->] (start.east) ..controls +(1,1) and +(-3,0) .. (item 3.west) node [pos=0.8,above] {7: sky};
+	\draw[->] (item 1.east) -- (item 1.east -| item 4.west) node [pos=0.5,below] {2: north};
+	\draw[->] (item 1.east) ..controls +(1,0.5) and +(-3,0) .. (item 2.east -| item 5.west) node [pos=0.85,below] {2: northern};
+	\draw[->] (item 2.east) ..controls +(1,-0.5) and +(-3,0) .. (item 1.east -| item 4.west) node [pos=0.85,above] {2: north};
+	\draw[->] (item 2.east) -- (item 2.east -| item 5.west) node [pos=0.5,above] {2: northern};
+	\draw[->] (item 3.east) -- (item 3.east -| item 6.west) node [pos=0.5,above] {2: north};
+	\draw[->] (item 3.east) ..controls +(1,0.5) and +(-3,0) .. (item 7.west) node [pos=0.8,above] {8: remained};
+	\draw[->] (start) ..controls +(1,3) and +(-6,0) .. (item 8.west) node [pos=0.9,above] {2--3: north wind};
+
+	\draw[->] (item 4.east) -- +(0.5,0.25);
+	\draw[->] (item 4.east) -- +(0.5,0);
+	\draw[->] (item 4.east) -- +(0.5,-0.25);
+	\draw[->] (item 5.east) -- +(0.5,0.25);
+	\draw[->] (item 5.east) -- +(0.5,0);
+	\draw[->] (item 5.east) -- +(0.5,-0.25);
+	\draw[->] (item 6.east) -- +(0.5,0.25);
+	\draw[->] (item 6.east) -- +(0.5,0);
+	\draw[->] (item 6.east) -- +(0.5,-0.25);
+	\draw[->] (item 7.east) -- +(0.5,0.25);
+	\draw[->] (item 7.east) -- +(0.5,0);
+	\draw[->] (item 7.east) -- +(0.5,-0.25);
+	\draw[->] (item 8.east) -- +(0.5,0.25);
+	\draw[->] (item 8.east) -- +(0.5,0);
+	\draw[->] (item 8.east) -- +(0.5,-0.25);
+
+	\matrix (chinese sentence) [nodes={anchor=mid},above of=item 3,node distance=4.5cm] {
+		\node{\zh{虽然}}; & 
+		\node{\zh{北}}; & 
+		\node{\zh{风}}; & 
+		\node{\zh{呼啸}}; & 
+		\node{\zh{,}}; & 
+		\node{\zh{但}}; & 
+		\node{\zh{天空}}; & 
+		\node{\zh{依然}}; & 
+		\node{\zh{十分}}; & 
+		\node{\zh{清澈}}; & 
+		\node{~~\zh{。}}; \\
+		\node{\em Although}; & 
+		\node{\em north}; & 
+		\node{\em wind}; & 
+		\node{\em howls}; & 
+		\node{\em ,}; & 
+		\node{\em but}; & 
+		\node{\em sky}; & 
+		\node{\em still}; & 
+		\node{\em extremely}; & 
+		\node{\em limpid}; & 
+		\node{\em .~}; \\
+		\node{1}; & 
+		\node{2}; &
+		\node{3}; &
+		\node{4}; &
+		\node{5}; &
+		\node{6}; &
+		\node{7}; &
+		\node{8}; &
+		\node{9}; & 
+		\node{10}; &
+		\node{11}; \\
+	};
+	
+	\node (label 2) [anchor=south east,left=5mm] at (start.west) {(2)};
+	\node (label 1) [above of=label 2,node distance=6cm] {(1)};
+	
+\end{tikzpicture}

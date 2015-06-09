@@ -1,0 +1,207 @@
+\chapter{Conclusions and Future Work}\label{chap:conclusion}
+
+\begin{quote}
+	{\em We can only see a short distance ahead, but we can see plenty there that needs to be done.}
+	\begin{flushright}
+		--Alan Turing
+	\end{flushright}
+\end{quote}
+
+Algorithms have been central to the development of statistical
+machine translation (Chapter~\ref{chap:survey}).  Stack decoding algorithms \citep[e.g.,][]{Wang:1997:acl,Koehn:2004:amta} 
+originating in information theory \citep{Jelinek:1969:tr} 
+and classical artificial intelligence \citep{Hart:1968:ssc}
+were essential to the development of 
+early models.  Context-free parsing algorithms 
+originating in the parsing community 
+\citep{cocke:1970:book,kasami:1965:tr,younger:1967:ic,earley:1970:cacm} 
+have been pivotal to the development of hierarchical
+translation models, and continue to produce new variants
+and embellishments \citep{Huang:2007:acl,Venugopal:2007:hlt-naacl}.  
+Minimum error rate training \citep{Och:2003:acl} is a novel
+optimization procedure originating in the statistical machine
+translation community that has been central to rapid
+progress over the last several years.
+
+This dissertation continues the tradition of algorithmic
+innovation in statistical machine translation.  We turned a
+novel idea for scaling \citep{Callison-Burch:2005:acl,Zhang:2005:eamt} 
+into a fully realized algorithmic framework to address a
+crucial scaling problem (Chapter~\ref{chap:overview}) 
+and solved a difficult algorithmic puzzle to make it applicable 
+to a wide range of models (Chapter~\ref{chap:algorithms}).
+Our algorithms draw on pattern matching techniques originally
+developed in bioinformatics and information retrieval.
+We applied our framework and significantly improved a
+strong baseline, showing that it could support
+models vastly larger than the current state of the art
+(Chapter~\ref{chap:scaling}).
+
+The contributions of this dissertation include the following.
+
+\begin{itemize}
+
+	\item We generalized a previous idea, bringing it to fruition as
+	a complete algorithmic framework called machine translation 
+	by pattern matching.  It enables scaling to large data, richer modeling,
+	and rapid prototyping.
+
+	\item We identified open questions in the prior work that provides the foundation
+	for our framework.  We solved these problems, giving
+	state-of-the-art performance in standard phrase-based translation models.
+
+	\item We introduced a novel approximate pattern matching algorithm that
+	extends our framework to a variety of important models based on 
+	discontiguous phrases.  Our algorithm solves a challenging computational puzzle.  
+	It is two orders of magnitude faster than the previous state-of-the art, and 
+	enables a number of previously difficult or impossible applications.
+
+	\item We showed how our framework can be applied to scale statistical translation
+	models along several axes, leading to substantial improvement in translation accuracy over
+	a state-of-the-art baseline.
+	
+	\item We showed that our method can scale up to extremely large models, at least
+	two orders of magnitude larger than most contemporary models.
+	
+	\item We include the most comprehensive contemporary survey of the field of statistical
+	machine translation.
+\end{itemize}
+
+\noindent We believe that these results only scratch the surface of
+the potential of translation by pattern matching.  
+Our algorithms enable the development and application of 
+models that are at least two orders of magnitude larger than
+most contemporary models.  This makes them applicable to both
+the ever-increasing size of parallel corpora, and the
+development of more complex models trained on these
+corpora.
+
+\section{Future Work}
+
+A number of obvious extensions to the 
+work in this thesis include extension to syntactic phrase-based models
+\citep{Galley:2004:naacl,Galley:2006:acl,DeNeefe:2007:emnlp-conll}
+and factored translation models \citep{Koehn:2007:acl-demo,Koehn:2007:emnlp}.
+The former requires only a model-specific source-driven extraction 
+algorithm, while the latter requires additional innovations in pattern
+matching, since it depends on a layered representation of training 
+and input data.
+
+We also plan to incorporate discriminative training methods into
+our framework.  \citet{Chan:2007:acl}, \citet{Carpuat:2007:emnlp-conll},
+and \citet{Subotin:2008:generals} improve
+translation accuracy by recasting target phrase selection as a
+multi-class classification problem.  They train a local 
+classifier using contextual features of the source phrase.  A drawback
+is that model complexity is substantially increased due to the richness
+of the feature space, harming the efficiency of offline training
+methods.  However, these features are easy to obtain at runtime 
+using our approach, which finds source phrases in context.  We could investigate other novel features using this framework.  For instance, we could consider using entire document context, which has not received much attention in the statistical translation literature.
+
+Although our algorithms are quite fast, we believe that
+their efficiency can be substantially improved.  This is especially
+true in the extraction step.  We can improve this using
+an online/offline mixture \citep{Zhang:2005:eamt}, in which we extract
+a small, fully computed phrase table containing only the most frequent
+source phrases, and use translation by pattern matching for phrases 
+not found in this table.  This is the same strategy that we used to 
+break down the pattern matching problem in Chapter~\ref{chap:algorithms},
+by focusing on the most frequent phrases.  Since the number
+of frequent types is small, this limited extraction would be feasible even
+for the extravagantly large model we developed in Chapter~\ref{chap:scaling}.
+Although our current decoder is only about twice as slow as decoding
+with a direct representation, this improvement 
+would enable our decoder to achieve speed close to that of offline
+methods, while retaining the scaling capabilities of our approach.
+
+In our experiments, we were able to keep a very large corpus in 
+memory without substantially taxing our moderate cluster resources.
+However, the available parallel data are constantly growing, 
+particularly with continued development of web-mined and comparable corpora.
+Extension to factored models may also significantly tax memory resources.
+Therefore, we may consider using more efficient representations.
+\citet{Navarro:2007:csur} describe compressed self-indexes, 
+a class of data structures that support both random access and 
+fast pattern matching while consuming only slightly more than
+the information-theoretic minimum space required by the data.  
+They are several times more compact than suffix arrays, and would 
+thus allow scaling to substantially larger corpora without significant
+changes to the architecture we have laid out in this dissertation.
+
+Moving beyond just translation, there
+is an affinity between natural language processing and bioinformatics.  
+Where natural language processing seeks to analyze and
+manipulate sequences of words in human language, bioinformatics seeks
+to analyze and manipulate sequences of proteins and other biological markers.
+Unsurprisingly, there is a some history of cross-development.  Recently,
+there has been some interest in the application of natural language
+parsing techniques to protein folding problems 
+\citep{Hockenmaier:2006:emnlp}.
+Synchronous grammars used in machine translation can also be 
+used in the analysis of protein structures
+\citep{Chiang:2004:thesis}.
+It has been shown that suffix arrays and prefix trees, the basis
+of many pattern matching algorithms in 
+bioinformatics, have novel applications in the analysis of corpora
+\citep{Yamamoto:2001:cl} and parallel corpora \citep{McNamee:2006:amta}.  
+
+This dissertation deepens this relationship by using 
+bioinformatics algorithms to improve machine translation.  
+As discussed in \textsection\ref{sec:baseline}, the pattern
+matching problem for discontiguous phrases is a variant
+of the approximate pattern matching problem.  A major
+application of approximate pattern matching in bioinformatics
+is query processing in protein databases for purposes of 
+sequencing, phylogeny, and motif identification \citep{Gusfield:1997:book}.  
+Using our approximate pattern matching algorithms, we
+conjecture that machine translation could be treated very
+much like search in a protein database.  In this scenario,
+the goal is to select training sentences that
+match the input sentence as closely as possible, under
+some evaluation function that accounts for both matching 
+and mismatched sequences, as well as possibly
+other data features.  
+
+Taking this scenario further, we imagine deepening the 
+connection to bioinformatics by applying multiple sequence
+alignment algorithms to the translation problem.  These
+algorithms take a set of similar sequences
+and attempt to find an optimal alignment of their matching
+subsequences \citep{Durbin:1998:book}.  One natural outcome that can be computed
+from the multiple sequence alignment is the consensus alignment.
+Suppose that we find many partial matches of a sentence
+in our training data.  We could apply multiple sequence alignment
+to their extracted translations to synthesize a new translation.
+Where most current decoding algorithms force the translations
+of overlapping source phrases to compete, this method
+reinforces their common elements.  Therefore, it might
+be a better use of the sparse evidence in our training
+data.  Similar algorithms have been used in 
+translation system combination \citep{rosti:2007:hlt-naacl},
+speech recognition \citep{Mangu:2000:csl}, and automatic
+summarization \citep{Barzilay:2003:hlt-naacl}.
+
+Finally, our work coincides with related efforts in the use of string kernels, a type of kernel used in machine learning methods that computes the overlap of non-contiguous subsequences between documents \citep{Lodhi:2002:jmlr}.  The pattern matching algorithm for hierarchical phrases can be seen as computing a string subsequence kernel between an input sentence and the entire training text, a quite difficult problem.  String kernels and related learning techniques are becoming widespread in statistical language processing and computational linguistics.  More broadly, these techniques are related to the notion of distributional similarity between words, which has received substantial attention in computational linguistics \citep[e.g.][]{Manning:1999:book,Pereira:1993:acl,Lee:1999:acl}.  Our algorithms could be used to investigate such hypotheses on a very large scale using kernel methods.
+However, they also have application in small scale, where they could be used to extract all sets of subsequences from small parallel corpora, thus making the most use of finite resources.
+
+\section{Concurrent Trends and Related Work}\label{sec:lm-scaling}
+
+Other work contemporary with ours has focused on scalable representations
+of language models, complementing to our work.  
+\citet{Brants:2007:emnlp-conll} and \citet{Zhang:2006:emnlp}
+use distributed representations of extremely
+large language models.  Notably, the latter approach
+is based on suffix arrays, an index data structure
+used in our pattern matching algorithms.  
+\citet{Talbot:2007:acl,Talbot:2007:emnlp-conll} employ 
+a Bloom filter, a data structure
+with enormous compression rates that admits a small probability
+of error.  This enables them to store a very large language model
+in a surprisingly small amount of memory.  They aim to put large-scale models
+in reach of researchers with moderate computing resources.  This
+encourages widespread experimentation with datasets and models that
+would only be accessible to those with large computing clusters.
+In this sense it is most complementary to our own work.
+A system combining their language model representation and
+our translation model representation could scale to extremely
+large models of both while using only a modest amount of memory.

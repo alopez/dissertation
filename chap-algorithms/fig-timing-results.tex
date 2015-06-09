@@ -1,0 +1,39 @@
+\begin{center}
+\begin{tikzpicture}
+	\newcommand\tablecell[2]{\begin{tabular}{c}#1\\#2\end{tabular}}
+	\tikzstyle{column 1} = [minimum width=1.9cm]
+	\tikzstyle{column 2} = [minimum width=2.2cm]
+	\tikzstyle{column 3} = [minimum width=3cm]
+	\tikzstyle{column 4} = [minimum width=3cm]
+	\tikzstyle{column 5} = [minimum width=3cm]
+	\tikzstyle{row 1} = [minimum height=7mm]
+	\matrix [nodes={rectangle},column sep=1mm]{
+		\node (col1 top) {baseline}; & 
+		\node (col2 top){prefix tree}; & 
+		\node (col3 top){+1 optimization}; & 
+		\node (col4 top){+2 optimizations}; & 
+		\node (col5 top){+3 optimizations};\\
+		\node  {}; & 
+		\node (prefix top) {}; & 
+		\node (node1){\tablecell{double binary}{174.1}}; & 
+		\node (node12) {\tablecell{double binary\\collocations}{7.0}}; & 
+		\node (node123 top){};\\
+		\node (baseline){\tablecell{}{221.4}}; & 
+		\node (node0){\tablecell{}{177.0}}; & 
+		\node (node2){\tablecell{collocations}{8.3}}; & 
+		\node (node13){\tablecell{double binary\\indices}{43.6}}; & 
+		\node (node123){\tablecell{double binary\\collocations\\indices}{0.97}};\\
+		\node {}; & 
+		\node {}; & 
+		\node (node3){\tablecell{indices}{47.2}}; & 
+		\node (node23){\tablecell{collocations\\indices}{2.3}}; & 
+		\node {};\\
+	};
+
+	\draw[snake=brace] (col1 top.south west) -- (col1 top.south east);
+	\draw[snake=brace] (col2 top.south west) -- (col2 top.south east);
+	\draw[snake=brace] (col3 top.south west) -- (col3 top.south east);
+	\draw[snake=brace] (col4 top.south west) -- (col4 top.south east);
+	\draw[snake=brace] (col5 top.south west) -- (col5 top.south east);
+\end{tikzpicture}
+\end{center}

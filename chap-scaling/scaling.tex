@@ -1,0 +1,741 @@
+\chapter{Tera-Scale Translation Models}\label{chap:scaling}
+
+\begin{quote}
+	{\em All models are wrong.  Some models are useful.}
+	\begin{flushright}
+		--George Box
+	\end{flushright}
+\end{quote}
+
+We've taken translation by pattern matching from a novel
+idea to a fully realized implementation and shown that it
+is a viable replacement for direct representation of models.
+Furthermore, we've solved a difficult algorithmic challenge
+in applying it to hierarchical phrase-based translation.
+These results match the current state of the art.
+Now we seek to improve on this result.  To our
+knowledge, none of the past work in this area 
+\citep{Callison-Burch:2005:acl,Zhang:2005:eamt} has demonstrated
+improvement over a credible baseline.
+
+The lack of prior positive results has encouraged skepticism.
+\citet{Zens:2007:hlt-naacl} specifically criticize
+the work of \citet{Callison-Burch:2005:acl}.
+Their argument centers on two key points.  First, they
+claim that the primary advantage posited by that work---
+use of longer phrases---does not lead to any improvements in 
+translation quality.  They cite both their
+own results and those of \citet{Koehn:2003:naacl}.
+Second, they object to the memory requirements of
+the training data and indices.  Phrase tables
+can easily exceed these requirements, but they solve
+this by storing their phrase table in an external
+prefix tree.  This drastically reduces memory
+use.
+
+The external prefix tree is certainly useful.  
+However, the argument employed
+to promote it overlooks some key points.
+First, though it may be true that longer phrases are not 
+particularly useful, there are many other axes along which
+models can be scaled up.  Second, the memory use
+of translation by pattern matching along these axes is constant.
+It supports very large models from a single underlying representation.  In 
+contrast, an external prefix tree representation must
+be generated for each model variant, and 
+is proportional to model size.  As model
+size increases, this becomes a significant drawback.
+We will show that translation by pattern matching enables us
+to use models that are impractical to implement using prefix trees.
+Since it computes parameters on an as-needed basis, there
+is no need to compute or store the entire model.  This
+enables us to translate with arbitrarily large models.
+
+There is an additional benefit. Since
+the underlying representation is static, it is possible
+to experiment with new models simply by modifying algorithmic
+parameters or model features.  We never need to recompute a 
+full model offline or design specialized extraction utilities.
+This makes translation by pattern matching an ideal platform
+for model prototyping.
+
+In this chapter we apply translation by pattern matching to the
+problem of translation model scaling.  Our experiments focus on
+hierarchical phrase-based translation,
+since it is superior to standard phrase-based translation 
+(cf. \textsection\ref{sec:overview-results}, \textsection\ref{sec:hiero-results}).
+We first illustrate the rapid prototyping capabilities of translation
+by pattern matching (\textsection\ref{sec:prototyping}).
+We then explore several scaling axes---some obvious and 
+some novel---and show that we can substantially improve on 
+the baseline system (\textsection\ref{sec:scaling-works}).  Our
+experiments highlight interesting characteristics of the model
+and interactions of various components.
+Finally, we conclusively demonstrate that reproducing our results
+with phrase tables would be highly impractical
+(\textsection\ref{sec:tera-scale-model}).
+
+\section{Rapid Prototyping via Pattern Matching}\label{sec:prototyping}
+
+Translation by pattern matching shortens
+experimental cycles by removing time-consuming offline model computation.
+Consider the conventional architecture illustrated in Figure~\ref{fig:table-based}.
+It requires us to re-extract rules and recompute
+all model parameters for each new model variant. This process can
+require several hours or even days.  Translation 
+by pattern matching enables us to explore many model variants
+because all models use the same underlying representation. 
+It is generated once, often in a matter of minutes
+(Figure~\ref{fig:prototyping}).
+
+\figpreamble
+\begin{figure}
+	\figfontsize{
+	\begin{center}
+		\input{chap-scaling/fig-initialization}
+	\end{center}}
+	\figpostamble
+	\label{fig:prototyping}
+	\caption{Experimental workflow for conventional architecture vs. translation by pattern matching.}
+\end{figure}
+
+Generating a conventional system using an external prefix tree 
+\citep{Zens:2007:hlt-naacl} takes a few steps.
+
+\begin{enumerate}
+	\item Extract all rule instances from the corpus.
+	\item Sort and score the rule instances.
+	\item Write the prefix tree a memory-mapped file.
+\end{enumerate}
+
+\noindent In many experimental scenarios, we must redo these steps for
+each system variant.  For instance, to experiment with different maximum
+phrase lengths, we must generate a new phrase table for each length.
+Furthermore, complexity depends on the size of 
+the model.  The time needed to sort and score rules increases with
+their number, so a model that generates more rules will take longer
+to create.  In contrast, generating a pattern matching system requires the following
+steps.
+
+\begin{enumerate}
+	\item Write the source training data as a memory-mapped suffix array.\footnote{For 
+		suffix array construction we use an algorithm due to 
+		\citet{Larsson:1999:tr}. \citet{Puglisi:2007:csur} 
+		identify several faster algorithms.}
+	\item Write the target training data as a memory-mapped array.
+	\item Write the alignment as a memory-mapped array.
+	\item Write the lexical weighting table as a memory-mapped data structure.
+	\item Write precomputed collocations and inverted indexes as memory-mapped data structures.
+\end{enumerate}
+
+\noindent The complexity of this offline initialization is mostly
+model-independent.  Even when it is not, its modularity is a benefit.
+For instance, to use a different word alignment of the same
+corpus, we need only generate a new alignment data structure.  To move
+from a standard phrase-based model to a hierarchical model, we only
+need to generate the precomputed collocations and inverted indices.
+The cost of generating these modular components is minor.
+
+To make matters concrete, we measured the generation time for both representations of our
+baseline hierarchical model (\textsection\ref{sec:hiero-results}).
+We generated a conventional system using an external prefix tree and a pattern
+matching system (precomputing for the 100 most frequent patterns).  The
+results are given in Table~\ref{table:startup-time}.  The size of
+each representation is illustrated in Table~\ref{table:representation-size}
+The prefix tree representation takes nearly 90 times as long to produce
+and requires over 7 times as much memory as our indirect representation.
+
+\figpreamble
+\begin{table}
+	\begin{center}
+		\input{chap-scaling/table-initialization}
+	\end{center}
+	\figpostamble
+	\caption{CPU time needed to generate the baseline model.}
+	\label{table:startup-time}
+\end{table}
+
+If we had a sufficiently large cluster, we might reduce the computation
+of phrase tables to a few hours using distributed 
+methods.\footnote{Chris Dyer, personal communication.}  However,
+this is still dependent on model complexity.
+We now turn to the topic of scaling our models to a size
+that dramatically outstrips our ability to 
+represent them using phrase tables.
+
+\figpreamble
+\begin{table}
+	\begin{center}
+		\input{chap-scaling/table-rep-size}
+	\end{center}
+	\figpostamble
+	\caption{Size of representations for the baseline model.}
+	\label{table:representation-size}
+\end{table}
+
+\section{Experiments}
+
+We exploited the rapid prototyping capabilities of our
+system to run a large number of experiments.  Our experiments
+focus on scaling, but they also highlight
+some interesting characteristics of the 
+underlying model.
+
+\subsection{Relaxing Grammar Length Restrictions}\label{sec:longer-phrases}
+
+\citet{Callison-Burch:2005:acl} and \citet{Zhang:2005:eamt} focused on
+two specific scaling axes for translation models: larger corpora and
+longer phrases.  We generalize these ideas under the rubric of adding
+more data, and generating more rules from available data.  We examine
+the former in \textsection\ref{sec:scaling-works} below.  Here
+we are concerned with the latter.  In hierarchical
+phrase-based translation, the analogue to an increase in maximum
+phrase length is relaxation of the grammar length restrictions
+(\textsection\ref{sec:hierarchical-translation}).
+We experimented with several such restrictions.
+
+\figpreamble
+\begin{table}
+	\begin{center}
+		\input{chap-scaling/table-lengths}
+	\end{center}
+	\figpostamble
+	\caption{Effect of varying phrase span and phrase length parameters.  
+		Baseline values are in bold.}
+		\label{table:length-limits}
+\end{table}
+
+First, we considered the effect of the maximum phrase span ($\maxphrasespan$)
+for rules extracted from training data.  Recall that this parameter
+limits the span of phrases that can be extracted 
+from the training data.  To see how this
+affects our ability to translate, suppose that an input
+sentence contains a source phrase $uXv$.  It is possible
+that subpatterns $u$ and $v$ are collocated in a training
+sentence, but within a window longer than the maximum
+phrase span.  In this case, the restriction prevents us
+from learning a translation rule that translates the 
+collocated patterns as a single unit.  Relaxing the span
+limit increases the chance of finding translation rules for
+collocated source phrases, or for finding additional examples
+of such rules.  The risk is an increased chance of learning
+translation rules for otherwise meaningless collocations.  
+\citet{Chiang:2007:cl} fixes the limit at 10.  To paint a complete picture
+of the effect of this parameter, we considered all values
+between 1 and 15.  Results are reported in 
+Table~\ref{table:length-limits} (a).  We found that accuracy
+plateaus just below the baseline setting.
+
+Next, we considered the effect of the maximum phrase 
+length ($\maxphraselen$), which limits the number of symbols 
+that can appear in a source phrase.
+This is the closest analogue of the maximum
+phrase length in a standard phrase-based model.  By
+increasing this parameter, we increase the number of words
+(either contiguous or in collocated subpatterns) that can be
+translated as a single unit.  As with the span parameter, we
+also run the risk of translating words based on purely
+coincidental collocation.  We considered values between 1 and 10.
+Results are reported in 
+Table~\ref{table:length-limits} (b).  As with the 
+previous experiment, we found that accuracy
+plateaus just at the baseline setting.
+
+%Finally, we considered the effect of decreasing the minimum
+%gap length.  Increasing this parameter reduces
+%the number of possible subphrases that can be subtracted from
+%larger phrases to form gaps.  In turn, this reduces the number
+%of rules that can be learned from a single source phrase in the
+%training data, and reduces grammar size.
+%\citet{Chiang:2007:cl} uses a value of two.  Since grammar size
+%is not a concern in our implementation, we reduce it to one,
+%allowing single words to be subtracted as subphrases.  This enables
+%the system to learn translation rules for patterns
+%$uXv$, in which subpatterns $u$ and $v$ are separated by a single
+%word.  In a single experiment, we found that reducing the minimum
+%gap size resulted in a BLEU score of 30.5, which does not improve
+%the baseline system score of 30.9.
+
+The results here essentially extend the findings of \citet{Koehn:2003:naacl}
+and \citet{Zens:2007:hlt-naacl} to the hierarchical case.  Though
+scaling along these axes is unhelpful, there is still a large space
+for exploration and improvement.
+
+\subsection{Interlude: Hierarchical Phrase-Based Translation and Lexical Reordering}
+\label{sec:lexicalized-reordering}
+
+Along a related line of inquiry, we considered the effect of increasing the number of 
+nonterminals in translated rules.  Although \citet{Chiang:2007:cl}
+limits the number of nonterminals to two, his decoder implementation
+can translate rules with arbitrary numbers of nonterminal symbols.
+For completeness, we also consider the effect of reducing
+this parameter to one or zero.  We also extend this experiment
+to gain insight into the benefits of hierarchical model over a
+conventional phrase-based model.
+
+A popular hypothesis posits that 
+hierarchical phrase-based translation is essentially
+equivalent to {\em lexicalized reordering} in conventional phrase-based models
+\citep{Tillman:2004:hlt-naacl,Koehn:2005:iwslt,Al-Onaizan:2006:acl-coling}.\footnote{
+This hypothesis was suggested to me
+independently in personal communications with several researchers, 
+including Chris Callison-Burch, Chris Dyer, Alex Fraser, and Franz Och.}
+Lexicalized reordering models parameterize reordering decisions on the
+words or phrases being translated.  Proponents of this hypothesis
+argue that, since the synchronous grammar encodes reordering decisions
+along with lexical translations, it performs the same function.  However,
+this differs from the typical justification for models that translate
+such phrases \citep[e.g.]{Chiang:2007:cl,Simard:2005:hlt-emnlp,Quirk:2006:hlt-naacl}.
+They argue that the ability to translate discontiguous phrases is central
+to the power of these models.  If this is not true, then the focus on
+discontiguous phrases may be a dead end, since, as we have seen, their
+rulesets are quite unwieldy.  We can instead simply pursue phrase-based
+translation using lexicalized distortion, since its representation is
+more compact.
+
+To tease apart these claims, we make the 
+following distinction.  Hierarchical phrases
+containing a single subpattern---that is,
+phrases in the form $u$, $Xu$, $uX$, or $XuX$---are
+interchangeable with lexicalized reordering in a conventional
+phrase-based model.  In contrast, hierarchical phrases
+representing discontiguous units---minimally $uXv$---encode
+translation knowledge that is strictly outside the purview
+of lexical reordering, specifically the translation of collocated
+patterns as a single unit.  This delineation is arguably too fine,
+but for scientific purposes it is good first approximation,
+allowing us to cleanly interpret the results.
+
+To test the lexical reordering hypothesis, we implemented a
+restriction on the number of subpatterns that could appear in either
+the source or target side of a hierarchical phrase.  With a limit
+of one, only one subpattern can appear in a hierarchical phrase, though
+the phrase may contain between zero and two nonterminals.\footnote{
+Note that this differs from a restriction on the number of 
+nonterminals, which by definition must appear in equal number in both
+the source and target.  This is not so with subpatterns.  For instance,
+the rule $X \longleftarrow \cidx{X}{1}u / v\cidx{X}{1}w$ is a legal 
+SCFG rule, though it contains only one source subpattern 
+and two target subpatterns.  Therefore we apply
+the restriction independently to both source and target phrases.}
+We ran several
+experiments varying both the number of subpatterns and the
+number of nonterminals.  Results are in 
+Table~\ref{table:lexicalized-reordering}.
+For comparison, we also include results of the
+phrase-based system Moses \citep{Koehn:2007:acl-demo} with and
+without lexicalized reordering.\footnote{This is a different
+decoder than the one we modified in \textsection\ref{sec:overview-results},
+which does not support lexicalized reordering.  The results with
+the Moses decoder are slightly better overall.}
+
+\figpreamble
+\begin{table}
+	\figfontsize{
+	\begin{center}
+		\input{chap-scaling/table-lexicalized}
+	\end{center}}
+	\figpostamble
+	\caption{Effect of varying the maximum number of nonterminals and subpatterns.}
+		\label{table:lexicalized-reordering}
+\end{table}
+
+Our results are consistent with those found
+elsewhere in the literature.  The most strict setting
+allowing no nonterminal symbols replicates a result in 
+\citet[Table~7]{Chiang:2007:cl}, with
+significantly worse accuracy than all other models.
+The most striking result is that the accuracy of Moses
+with lexicalized reordering is indistinguishable from the accuracy
+of the hierarchical system.  Both improve over non-lexicalized
+Moses by about 1.4 BLEU.  However, the
+hierarchical emulation of lexicalized reordering shows that
+the full hierarchical model owes its power only partly to
+this effect.  Additional improvement is seen when we add
+discontiguous phrases.  That the effect of lexicalized reordering is
+weaker in the hierarchical model is unsurprising, since its
+parameterization is much simpler than the one used by the
+Moses, which includes several specialized features for this
+purpose.  This suggests that the hierarchical model could
+be improved through better parameterization, and still
+benefit from the translation of discontiguous phrases.
+
+Finally, we observe that using more than two nonterminals does
+not improve the hierarchical model.
+
+\subsection{Complementary Scaling Axes}\label{sec:scaling-works}
+
+So far, we have extended the results of \citet{Zens:2007:hlt-naacl}
+and \citet{Koehn:2003:naacl} to hierarchical phrase-based
+translation, confirming that longer phrases do not substantially
+improve these systems.  We have also shed some light on the
+interpretation of hierarchical phrase-based translation.
+While these are interesting scientific
+findings, they don't improve our baseline system.
+We now investigate other axes
+along which we can scale our models, some obvious and some novel.
+
+Because we find these axes to be complementary, we present
+them together in this section, along with results 
+showing improved translation
+accuracy.  Our improved system incorporates a large amount of 
+out-of-domain data (\textsection\ref{sec:out-of-domain}),
+sparse discriminatively trained word alignments 
+(\textsection\ref{sec:discriminative-alignment}),
+loose phrase extraction heuristics 
+(\textsection\ref{sec:extraction-heuristics}), and 
+a novel parameterization enabled by our approach
+(\textsection\ref{sec:coherence}).  These factors
+represent a synthesis of recent trends in statistical
+machine translation and lead to substantial improvement
+(\textsection\ref{sec:scaling-results}).  
+In \textsection\ref{sec:tera-scale-model} we will show
+that this synthesis could not have been done without 
+translation by pattern matching.
+
+\subsubsection{Out of Domain Data}\label{sec:out-of-domain}
+
+Translation by pattern matching enables us to train from very 
+large corpora.  In our experiments, we were not able to find
+corpora that were too large to comfortably fit in memory on our
+research machines, each of which had 8GB RAM.
+To our knowledge, the training corpus of Chinese-English system
+that we used in our baseline systems is among the largest corpora
+of processed {\em in-domain} training data currently in use---
+that is, the genre of this training data is identical to that
+of the test data.\footnote{This corpus contains nearly all of the parallel 
+newswire data available from the Linguistic Data Consortium.}  To move
+to larger corpora, we added a large quantity of {\em out-of-domain data}
+---data drawn from a different genre than the test, though in 
+the same language pairs.  We used a large parallel text of 
+United Nations proceedings.  It is almost three times
+the size of our in-domain training corpus, and makes our full 
+training corpus among the largest assembled for Chinese-English 
+translation tasks.\footnote{Our corpus is over half the size of
+one used by \citet{Zens:2007:hlt-naacl} for a Chinese-English
+task, and comparable in size
+to those used by \citet{Fraser:2006:acl-coling} for Arabic-English
+and French-English tasks.} Corpus statistics
+are reported in Table~\ref{table:corpus-statistics}.  The corpus
+was tokenized, aligned, and otherwise preprocessed separately from
+the newswire corpus using identical tools.
+
+Making the best use of out-of-domain data in statistical 
+machine translation is a difficult problem that has only 
+recently received any attention \citep{foster:2007:smt}.
+The simplest strategy is to simply concatenate the out-of-domain
+data with the in-domain data.  This
+raises a concern.  A source phrase with a different
+sense in the out-of-domain data may occur so frequently
+that it outweighs the correct sense found in the 
+in-domain data.  Therefore, we treat each corpus independently.  
+From each corpus, we sample up to 300 rule
+occurrences, and compute both lexical weighting and the
+source-to-target phrase translation probability separately
+on each sample.  For the UN corpus, the resulting probabilities
+are incorporated into three new features.  These features
+receive a value of zero for any rule computed from the newswire
+data.  Likewise, the original source-to-target phrase
+translation probability and lexical weighting features receive a value
+of zero for rules computed from the UN data.  This is not 
+as elegant as the model used by \citet{foster:2007:smt} 
+but is similar and easy to implement in our setting.
+
+\figpreamble
+\begin{table}
+	\begin{center}
+	\begin{tabular}{cccc}
+		Corpus & Sentences & Chinese tokens & English tokens \\ \hline
+		Newswire & 1.02 million & 27 million & 28 million \\
+		UN & 2.53 million & 82 million & 79 million \\
+		Combined & 3.55 million & 107 million & 107 million \\
+	\end{tabular}
+	\end{center}
+	\figpostamble
+	\caption {Sizes of experimental corpora.}
+	\label{table:corpus-statistics}
+\end{table}
+
+
+\subsubsection{Discriminatively Trained Word Alignments}
+\label{sec:discriminative-alignment}
+
+The second axis that we vary concerns the underlying word alignment.
+Two trends are apparent in recent word alignment research.
+First, there has been substantial success in discriminative
+training of word alignments as measured by intrinsic
+criteria.  Second, there is considerable debate over whether
+these improvements carry over to the translation task itself
+\citep{Ayan:2006:acl-coling,Fraser:2007:cl,Lopez:2006:amta}.
+
+A discriminative aligner that improves in both intrinsic
+measures and translation tasks is the
+maximum entropy aligner of \citet{Ayan:2006:hlt-naacl}.
+Their alignment improves translation accuracy from 24.0
+to 25.6 BLEU over a standard aligner on the NIST 2003
+Chinese-English task.  This is a significant improvement.
+However, both the baseline and the improved system are
+far from state-of-the-art due to the relatively small training
+set of 107 thousand sentences.\footnote{For comparison,
+our baseline system achieves a score of 32.9 BLEU on this task, 
+though we use it as a development corpus.}  The newswire 
+corpus used in our experiments is ten times larger, and the
+full corpus including out-of-domain data is 35 times 
+larger.  Experience has shown that improvements found in
+small data conditions often do not hold in large data 
+conditions \citep{Fraser:2007:cl,Lopez:2006:amta},
+so we believe this is important to test.
+\citet{Ayan:2006:hlt-naacl} also used a quite
+strict phrase length setting due to computational constraints.
+These constraints were disk space and offline
+computation time, which are not a concern our system
+due to its small footprint in both disk use and CPU
+time.
+
+For comparison, we also considered the heuristically
+combined GIZA++ alignments used by our baseline system.
+In both cases, the in-domain and out-of-domain corpora
+were aligned separately.
+
+\subsubsection{Phrase Extraction Heuristics}
+\label{sec:extraction-heuristics}
+
+Translation by pattern matching becomes extremely relevant
+when we consider the interaction of word alignment and
+phrase extraction heuristics.  The GIZA++ alignments
+used in our baseline system are dense
+alignments.  The number of alignment links is over 96\%
+of the number of word tokens in each language.  The actual
+percentage of aligned words may be somewhat less than this,
+since some words may participate in multiple alignments.
+However, we can safely assert that most words are aligned.
+Recall that the tight extraction heuristic requires aligned words
+at both the edges of main phrases and subtracted phrases
+(\textsection\ref{sec:source-driven-rule-extraction},
+\textsection\ref{sec:hierarchical-extraction}).
+Since most words are aligned, this heuristic filters out
+relatively few candidate phrases.  Conversely, the loose
+heuristic, which allows phrases to contain unaligned words
+at the borders of aligned phrases, will result in only a
+small number of additional extracted phrases.  
+
+In contrast, the maximum entropy alignments are sparse.
+The number of alignment links is less than 70\% of the
+number of word tokens in each language.  These alignments
+interact strongly with the extraction heuristics.
+Consider a phrase $uXv$ containing two collocated
+subpatterns and a single gap.  We will make the
+coarse assumption that any given word has only a 70\%
+chance of being aligned.  Since the tight heuristic requires
+that both the main phrase and the subphrase have aligned 
+edge words, the chance that an arbitrary phrase meets
+this criterion is less than 25\%.  The situation is even
+worse for phrases with two gaps.  In contrast, the loose
+heuristic not only removes this restriction, but permits
+the extraction of many variant translations containing
+unaligned words at the edges of the main phrase and subtracted
+phrases.  This results in the extraction of a very 
+large inventory of phrases.
+\citet{Ayan:2006:acl-coling} show that this
+interaction dramatically affects translation performance.  
+They found that using the loose heuristic with sparse alignments
+improved accuracy by 3.7 BLEU over the tight heuristic.  
+This finding is supported by \citet{Fraser:2007:cl} 
+and \citet{Lopez:2006:amta}, who found that larger phrase
+inventories tend to improve translation accuracy, particularly
+for Chinese to English translation.
+
+Scaling this result to a very large dataset 
+is a natural application for translation
+by pattern matching, since it implies that a very large
+number of phrases would have to be processed if we constructed
+a phrase table offline.  Indeed, \citet{Ayan:2006:acl-coling}
+do not provide results for some more permissive settings due
+to computational cost, even in their small data setting.  
+Later, we will show that the interaction of loose extraction
+heuristics on sparse alignments on a large corpus produces
+a very large model \textsection\ref{sec:tera-scale-model}.
+
+\subsubsection{Coherent Translation Units}
+\label{sec:coherence}
+
+An interesting modification to our
+baseline model is enabled by pattern matching. 
+Recall from \textsection\ref{sec:overview-baseline}
+that for every phrase, we compute a marginal for 
+phrase translation probabilities using the number of
+rules containing the source phrase.
+
+We saw in \textsection\ref{sec:source-driven-rule-extraction}
+and \textsection\ref{sec:hierarchical-extraction} that
+several conditions can prevent extraction of a translation
+for any particular occurrence of a source phrase.
+The target phrase
+might be too long, there might be unaligned words
+at its edges if we are using a tight extraction heuristic,
+the reflected source span might not match the main
+phrase, or one of the subtracted phrases violates
+these restrictions.
+
+Translation by pattern matching gives us the ability
+to incorporate the knowledge that we gain from
+failed phrase extraction into our model.
+Informally, we think of this as follows.  If a
+phrase occurs frequently in our corpus, but we are
+often unable to extract a translation for it,
+then our confidence that it represents a 
+coherent unit of translation is diminished.  Conversely,
+if we are usually able to extract a translation of the phrase, then
+we believe that the phrase is a natural unit of translation.
+We call this property {\em coherence}.  Note that this
+property is not captured in the conventional offline
+extraction method in which only valid phrase 
+pairs are extracted.  If a phrase occurs many times but
+we can only extract a translation for it a few 
+times, then those translations receive very high probabilities,
+even though they may only reflect coincidence or even 
+misalignments.
+
+We define coherence as the ratio of successful extractions 
+to attempted extractions.  This is added as a feature in our
+log-linear model.  As an alternative, we can incorporate the
+notion of coherence directly into the phrase translation
+probability.  We call this the coherent phrase-to-phrase
+translation probability.  We found in preliminary experiments
+that these alternatives performed equally well.  In the 
+interest of keeping our model as simple as possible, we choose
+the latter option since it does not increase the number of 
+features.
+
+\subsubsection{Results}\label{sec:scaling-results}
+
+\figpreamble
+\begin{table}
+	\figfontsize{
+	\begin{tabular}{llcc}
+		\multicolumn{2}{l}{System} & BLEU & loss\\ \hline
+		\multicolumn{2}{l}{Best (all modifications)} & 32.6 & --\\
+		~ & with grow-diag-final-and alignment instead of maximum entropy alignment & 32.1 & -0.5 \\
+		~ & with tight extraction heuristic instead of loose & 31.6 & -1.0 \\
+		~ & without UN data & 31.6 & -1.0\\
+		~ & without separate UN grammar & 32.2 & -0.4 \\
+		~ & with standard $p(f|e)$ instead of coherent $p(f|e)$ & 31.7 & -0.9 \\
+		\multicolumn{2}{l}{Baseline (Phrase Tables)} & 30.7 & -1.9 \\
+		\multicolumn{2}{l}{Baseline (Pattern Matching)} & 30.9 & -1.7 \\
+	\end{tabular}}
+	\figpostamble
+	\caption{Results of scaling modifications and ablation experiments.}
+	\label{table:scaling-results}
+\end{table}
+
+As in \textsection\ref{sec:overview-results} and 
+\textsection\ref{sec:hiero-results}, each system configuration
+was optimized separately on the development set.
+We repeat the baseline system results from \textsection\ref{sec:hiero-results}
+and show the results for a system combining all of the modifications
+described above.  In addition, we performed ablation experiments
+to study the contribution of each modification to the improved
+system (Table~\ref{table:scaling-results}).  
+Our result improves significantly over the baseline.  The
+improvement over the conventional baseline is 1.9 BLEU.  Since
+this is a strong baseline, our improvements are
+quite substantial.  We find that
+all the modifications described above contribute in some way to the
+improvement.  The results highlight the complementary nature of our 
+modifications.  In some cases the removal of even one of them
+causes a loss of over one BLEU point.
+
+To confirm these results, we ran two additional experiments.
+First, we compared the baseline and improved systems on the NIST 2006 
+Chinese-English task.  Since we did not perform any other experimentation
+on this dataset it serves as a validation set.  The baseline system
+scores 27.0, while our modified system improves this to 28.4,
+a statistically significant improvement.
+
+We also compared our modified system against an augmented baseline
+using a 5-gram language model and rule-based number translation.  The objective
+of this experiment is to ensure that our improvements are complementary to
+better language modeling, which often subsumes other improvements.
+The new baseline achieves a score of 31.9 on the NIST 2005 set, making
+it nearly the same as the strong results reported by 
+\citet{Chiang:2007:cl}.  Our modified system increases this to 
+34.5, a substantial improvement of 2.6 BLEU.
+
+\section{A Tera-Scale Translation Model}\label{sec:tera-scale-model}
+
+To get a sense of the what our improvements would require
+if we attempted them in a system based on direct representation,
+we estimated size of the synchronous grammar table
+that would be equivalent to the configuration of our best
+system.  Due to constraints on disk space and time, we did not
+construct the table itself, for reasons that will become
+clear below.  We modified
+the extractor to simply report the number of rules that it would
+normally extract under our model setting.  To estimate 
+phrase table size, we assume
+that the disk space requirements and the number of scored rules
+grows linearly in the number of extracted rules.\footnote{This
+is perhaps conservative, since our corpus is heterogeneous, and
+since the ratio of unique rules tends to increase with their
+overall number.}
+Therefore, we simply multiply the numbers in 
+Table~\ref{table:startup-time} by the ratio of extracted
+rules between the improved and baseline systems.
+
+The number of extracted rules and the resulting estimates
+of phrase table size (Table~\ref{table:estimated-phrase-table})
+show that it would be completely impractical to compute such
+a phrase table.  The large corpus, sparse alignments, 
+and loose extraction heuristics combine to produce a number
+of rule occurrences that is two orders
+of magnitude larger than in the baseline system.  Merely counting
+all of these occurrences took almost five days on our 17-node
+research cluster.  We estimate that the resulting files would
+require about a terabyte of disk space.  Assuming that we even
+had adequate external algorithms to sort, score, 
+and generate a memory-mapped prefix tree for such 
+large files, we hesitate to estimate how
+long it would take.  This estimate does not even address
+the question of computing the coherent phrase translation
+probabilities in an offline setting.  In order to compute this feature using offline methods, we would need to extract an event for each occurrence of a pattern that might be considered a legal phrase, even if the occurrence was not part of an extractable phrase pair.  This would substantially inflate the number of events extracted from the corpus and increase the amount of offline computation beyond the estimate reported here.
+
+By comparison, it took 1.3 hours to generate the data files for
+our pattern matching decoder on a single CPU, and we completed
+the full complement of experiments in Table~\ref{table:scaling-results}
+in substantially less time than it took to simply count the 
+rules that would be generated in the conventional system.
+
+\figpreamble
+\begin{table}
+	\begin{center}
+		\input{chap-scaling/table-tera-scale-model}
+	\end{center}
+	\figpostamble
+	\caption{Generation times and size of representations for 
+		the improved model (cf. Table~\ref{table:representation-size}).}
+	\label{table:estimated-phrase-table}
+\end{table}
+
+\section{Conclusions}
+
+Our results demonstrate that translation by pattern
+matching enables practical, rapid exploration of vastly larger
+models than those currently in use.  As a first
+step in this direction, we have explored a number of different
+scaling axes, and shown that we can significantly outperform
+a strong baseline generated with a 
+state-of-the-art model.  Furthermore, the rapid
+prototyping capabilities of our system enable experimentation
+with many different model variants using a single representation
+that is easy and efficient to generate.  We
+explored some interesting characteristics of the hierarchical
+phrase-based translation model using this capability, finding
+that while longer phrases are no more helpful in the hierarchical
+setting than in the standard setting, the use of discontiguous
+phrases adds power to hierarchical models, in addition to acting
+as a simplified type of lexicalized distortion.
+
+
+
+
+

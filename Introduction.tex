@@ -1,0 +1,158 @@
+\chapter{Introduction}\label{chap:introduction}
+
+\begin{quote}
+	{\em Computer Science is no more about computers than astronomy is about telescopes.}
+	\begin{flushright}
+		--Edsger Dijkstra
+	\end{flushright}
+\end{quote}
+\begin{quote}
+	{\em The purpose of computing is insight, not numbers.}
+	\begin{flushright}
+		--Richard Hamming
+	\end{flushright}
+\end{quote}
+
+Machine translation is an old problem.  Like many other
+computational problems it has been largely reinvented in 
+the last fifteen years through the incorporation of machine 
+learning methods.  The machine learning approach to machine
+translation---called {\em statistical machine translation}---
+requires considerable data and careful modeling.  
+With available data increasing in size
+and the best models increasing in complexity,
+efficient algorithms are central to continued
+progress.  This dissertation presents an algorithmic approach
+to statistical machine translation that enables scaling to
+large data and complex models, and fosters the rapid experimentation
+needed to exploit them.
+
+Most statistical machine translation systems implement a 
+{\em direct representation} of the model.  This entails
+offline computation of the complete model and storage of
+this model in an efficient data structure in main memory 
+at runtime.  In practice, these requirements
+restrict the size of training data and the complexity
+of the model, since both factors can affect model size.
+
+\citet{Callison-Burch:2005:acl} and \citet{Zhang:2005:eamt}
+proposed an alternative that we call {\em translation by pattern matching},
+which we bring to fruition in this dissertation.  This
+approach relies on an indirect representation of the model.
+We store the training data itself in memory as its proxy.
+Model parameters are then computed as needed at runtime.  This
+representation is much more compact than the full model
+and requires substantially less offline computation.  
+It depends crucially on the ability to quickly search for 
+relevant sections of the training data and compute
+parameters as needed.   To perform this search, we need
+algorithms for fast pattern matching on text, drawn primarily
+from the literature in bioinformatics and information
+retrieval.  Although
+\citet{Callison-Burch:2005:acl} and \citet{Zhang:2005:eamt}
+resolve several problems in the application of translation
+by pattern matching to a standard phrase-based model, they leave behind several
+open problems.  The first is whether their approach
+can equal the performance of direct representation, 
+a question that we answer affirmatively.
+
+The next open problem we address is much harder.
+\citet{Callison-Burch:2005:acl} and \citet{Zhang:2005:eamt}
+applied their approach only to phrase-based translation models 
+based on the translation of contiguous strings.  However,
+a variety of translation models are now based on the 
+translation of {\em discontiguous} phrases.  This new wrinkle
+poses a difficult algorithmic challenge.
+Exact pattern matching algorithms used for contiguous phrases don't work and
+the best approximate pattern matching algorithms are much too slow,
+taking several minutes per sentence.  A major contribution of
+this dissertation is the development of new approximate 
+pattern matching algorithms for translation models based on
+discontiguous phrases.  Our algorithms reduce the empirical computation
+time by two orders of magnitude, making translation by pattern matching
+feasible for these models.
+
+With these tools in hand, we address the problem of scaling
+our translation model.  We then explore several scaling axes---some obvious and 
+some novel---and show that we can significantly improve on 
+a state-of-the-art hierarchical phrase-based translation system.  
+Our experiments highlight interesting characteristics of the model
+and interactions of various components.
+Finally, we conclusively demonstrate that reproducing our results
+with a direct representation would be extremely impractical.
+
+\section{Outline of the Dissertation}
+
+To set the stage for our research, Chapter~\ref{chap:survey} surveys the
+current state of the art in statistical machine translation.  This is the
+most extensive contemporary survey of the field.  It serves as a foundation 
+on which the remaining chapters build.
+
+Chapter~\ref{chap:overview} introduces translation by pattern matching.  We first
+review previous work that serves as inspiration for our approach.  We then identify
+some limitations of this work
+and describe how we overcame these, transforming a clever idea into a 
+practical solution.  We establish for the first time 
+that translation by pattern matching is a
+viable replacement for direct representation in a state-of-the-art phrase-based
+translation model.
+
+In Chapter~\ref{chap:algorithms} we apply translation by pattern matching to models
+based on the translation of discontiguous strings.  This requires the invention 
+of new pattern matching algorithms.  We describe our
+algorithms in detail and analyze them theoretically and empirically.  Our algorithms
+allow us to apply translation by pattern matching to hierarchical
+phrase-based translation, a stronger baseline than the model used
+in \ref{chap:overview}.  It matches the state of the art
+achieved by direct representation.
+
+In Chapter~\ref{chap:scaling} we apply translation by pattern matching to the problem of scaling
+translation models.  We describe a number of axes along which
+we can scale the models and investigate each of these empirically.  We then show
+that our scaling methods improve translation quality over our strong
+baseline.  Our experiments illuminate some interesting qualities
+of these models and their interaction with aligned bilingual texts.  Finally,
+we demonstrate that our results would be extremely difficult to replicate
+using a direct representation.
+
+Chapter~\ref{chap:conclusion} contains conclusions and future work.  We also
+relate our work to other developments in the field, and describe
+future research plans.
+
+\section{Research Contributions}
+
+The dissertation contains several important research contributions.
+
+\begin{itemize}
+
+	\item We describe a complete algorithmic framework for machine translation
+	by pattern matching that enables scaling to large data, richer modeling,
+	and rapid prototyping.
+
+	\item We identify unanswered questions in the prior work that provides the foundation
+	of our framework, and describe how we answer them to give
+	state-of-the-art performance in standard phrase-based translation models.
+
+	\item We introduce a novel approximate pattern matching algorithm that
+	extends our framework to a variety of important models based on 
+	discontiguous phrases.  Our algorithm solves an empirically difficult algorithmic problem.  
+	It is two orders of magnitude faster than the previous state of the art, and 
+	enables a number of previously difficult or impossible applications.
+
+	\item We show how our framework can be applied to scale statistical translation
+	models along several axes, leading to improvement in translation accuracy over
+	a state-of-the-art baseline.
+
+	\item We show that our method can scale to extremely large models, at least
+	two orders of magnitude larger than most contemporary models.
+
+	\item We include the most comprehensive survey of the field of statistical
+	machine translation to date.
+\end{itemize}
+
+
+
+
+
+
+

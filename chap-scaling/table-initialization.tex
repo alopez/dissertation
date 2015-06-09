@@ -1,0 +1,13 @@
+\begin{tabular}{llr}
+	\multicolumn{2}{l}{Method} & CPU time (seconds) \\ \hline
+	\multicolumn{2}{l}{\bf Phrase tables (external prefix tree)} & {\bf 39051}\\
+	~ & Phrase extraction & 31771\\
+	~ & Phrase table scoring & 5322\\
+	~ & External prefix tree generation & 1958\\ \\
+	\multicolumn{2}{l}{\bf Translation by pattern matching} & {\bf 445} \\
+	~ & Suffix array construction (source) & 100\\
+	~ & Array construction (target) & 40\\
+	~ & Precomputations & 126\\
+	~ & Array construction (alignments) & 96\\
+	~ & Lexical weight computation & 73\\
+\end{tabular}

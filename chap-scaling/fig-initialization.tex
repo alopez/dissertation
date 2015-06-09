@@ -1,0 +1,72 @@
+\begin{center}
+	\begin{tikzpicture}
+%		\node (mem)[rectangle,rounded corners,fill=lightgray,minimum height=5.0cm,minimum width=2.8cm,label=90:main memory] at (10,-0.75){};
+		\node (corpus)[rectangle,draw,label=90:parallel text,minimum height=1.5cm,minimum width=1.5cm] at (0,0) {};
+		\foreach \y in {0.05,0.1,...,1.4}{
+			\draw[yshift=-0.7cm] (-0.65,\y) -- (-0.05,\y);
+			\draw[yshift=-0.7cm] (0.05,\y) -- (0.65,\y);
+		}
+
+%		\node (rules)[rectangle,draw,label=90:extracted rules,minimum height=2.5cm,minimum width=0.75cm] at (5,0) {};
+%		\foreach \y in {0.05,0.1,...,2.4}{
+%			\draw[xshift=5.0cm,yshift=-1.2cm] (-0.3,\y) -- (-0.05,\y);
+%			\draw[xshift=5.0cm,yshift=-1.2cm] (0.05,\y) -- (0.3,\y);
+%		}
+
+		\foreach \tabley/\id in {-2.5/3, 0/2, 2.5/1}{
+		\begin{scope}[xshift=7cm,yshift=\tabley cm]
+			\node (pt)[rectangle,draw,fill=white,minimum height=2.0cm,minimum width=2.20cm] at (0,0) {};
+			\foreach \y in {0.05,0.1,...,1.9}{
+				\draw[yshift=-0.95cm] (-1.0,\y) -- (-0.75,\y);
+				\draw[yshift=-0.95cm] (-0.65,\y) -- (-0.4,\y);
+				\draw[yshift=-0.95cm] (-0.3,\y) -- (-0.05,\y);
+				\draw[yshift=-0.95cm] (0.05,\y) -- (0.3,\y);
+				\draw[yshift=-0.95cm] (0.4,\y) -- (0.65,\y);
+				\draw[yshift=-0.95cm] (0.75,\y) -- (1.0,\y);
+			}
+			\node (process) [rectangle,rounded corners,draw,text width=2.5cm,text centered] at (-3.5,0) {rule extraction and scoring (variant \id)};
+			\node (decoder) [rectangle,rounded corners,draw] at (4,0) {decoder};
+
+			\draw[->] (corpus) -- (process);
+			\draw[->] (process) -- (pt);
+			\draw[->] (pt) -- (decoder);
+		\end{scope}
+		}
+		\node [anchor=south,above=5mm] at (pt.north) {phrase tables};
+
+		\draw[snake=brace,raise snake=5mm,segment amplitude=2mm] (process.north west) -- (process.north east) node [pos=0.5,anchor=south,above=7mm] {hours or days};
+
+		\draw[snake=brace,raise snake=5mm,segment amplitude=2mm] (decoder.north west |- process.north) -- (decoder.north east |- process.north) node [pos=0.5,anchor=south,above=7mm] {hours};
+
+		\node [anchor=south west] at (-1cm,-4.3cm) {Conventional translation with phrase tables};
+		\node [anchor=north west] at (-1cm,-8.5cm) {Translation by pattern matching};
+		\draw (-1cm,-4.3cm) -- +(13cm,0cm);
+
+		\begin{scope}[yshift=-8cm]
+			\node (corpus)[rectangle,draw,label=90:parallel text,minimum height=1.5cm,minimum width=1.5cm] at (0,0) {};
+			\foreach \y in {0.05,0.1,...,1.4}{
+				\draw[yshift=-0.7cm] (-0.65,\y) -- (-0.05,\y);
+				\draw[yshift=-0.7cm] (0.05,\y) -- (0.65,\y);
+			}
+
+			\begin{scope}[xshift=7cm]
+				\node (compiled corpus)[rectangle,draw,minimum height=1.5cm,minimum width=1.5cm] at (0,0) {};
+				\foreach \y in {0.05,0.1,...,1.4}{
+					\draw[yshift=-0.7cm] (-0.65,\y) -- (-0.05,\y);
+					\draw[yshift=-0.7cm] (0.05,\y) -- (0.65,\y);
+				}
+			\end{scope}
+			\node [anchor=south,text width=3.5cm,text centered] at (compiled corpus.north) {indexed, memory-mapped parallel text};
+			\node (process) [rectangle,rounded corners,draw,text width=2.5cm,text centered] at (3.5,0) {compilation and indexing};
+			\draw[->] (corpus) -- (process);
+			\draw[->] (process) -- (compiled corpus);
+			\foreach \decodery/\id in {-1.5/3,0/2,1.5/1}{
+				\node (decoder) [rectangle,draw,rounded corners,text centered,text width=1.75cm] at (11,\decodery) 
+					{decoder (variant \id)};
+				\draw[->] (compiled corpus) -- (decoder.west);
+			}
+			\draw[snake=brace,raise snake=5mm,segment amplitude=2mm] (process.north west) -- (process.north east) node [pos=0.5,anchor=south,above=7mm] {minutes or hours};
+			\draw[snake=brace,raise snake=5mm,segment amplitude=2mm] (decoder.north west) -- (decoder.north east) node [pos=0.5,anchor=south,above=7mm] {hours};
+		\end{scope}
+	\end{tikzpicture}
+\end{center}

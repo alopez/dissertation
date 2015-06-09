@@ -1,0 +1,66 @@
+\begin{tikzpicture}[level distance=2.5cm]
+	\tikzstyle{suffix link} = [->,densely dotted]
+	\tikzstyle{level 1} = [sibling distance=2.5cm]
+	\tikzstyle{level 2} = [sibling distance=2cm]
+	\tikzstyle{level 3} = [sibling distance=1cm]
+
+	%\clip (-1,-3.5) rectangle (14,6);
+	\tikzstyle{edge from parent} = [->,draw]
+	\node (root)[root node]{}[grow'=right]
+		child [sibling distance=2cm]{node (him)[active node]{} edge from parent node [left]{him}}
+		child {node (it)[active node]{}{
+			child [sibling distance=1cm]{node (it disheartens)[inactive node]{} edge from parent node [above=1mm]{disheartens}} 
+			child [sibling distance=1cm]{node (it X)[active node]{}{
+				child {node (it X him)[active node]{} edge from parent node [above]{him}} 
+				} edge from parent node [below]{X}} 
+			} edge from parent node [below]{it}}
+		child {node (and) [active node]{}{
+			child {node (and it)[active node]{}{
+				child {node (and it disheartens)[inactive node]{} edge from parent node [above=1mm]{disheartens}} 
+				child {node (and it X)[active node]{}{
+					child {node (and it X him)[active node]{} edge from parent node [above]{him}} 
+					} edge from parent node [below]{X}} 
+				} edge from parent node [above]{it}}
+			child  {node (and X)[active node]{}{
+				child {node (and X him) [active node]{} edge from parent node [above]{him}} 
+				child {node (and X disheartens)[inactive node]{} edge from parent node [below]{disheartens}} 
+				} edge from parent node [below]{X}}
+			} edge from parent node [above]{and}}
+		child  {node (X)[active node]{}{
+			child [sibling distance=1cm]{node (X him)[active node]{} edge from parent node [above]{him}} 
+			child [sibling distance=1cm]{node (X disheartens)[inactive node]{} edge from parent node [below]{disheartens}} 
+			} edge from parent node [below]{X}}
+		child [sibling distance=2cm]{node (disheartens)[inactive node]{} edge from parent node [left=5mm,below=3mm]{disheartens}} 
+			
+		;
+	\draw[suffix link] (and X) ..controls +(-1.5,-0.5) .. (X.north);
+	\draw[suffix link] (X disheartens) ..controls +(-0.75,-0.75) .. (disheartens);
+	\draw[suffix link] (and X disheartens) ..controls +(-0.5,-1) .. (X disheartens);
+	\draw[suffix link] (and X him) ..controls +(2,-1) and +(2,-1).. (X him);
+	\draw[suffix link] (disheartens) ..controls +(-2.5,0) and +(-1.5,-2) .. (root);
+	\draw[suffix link] (X) ..controls +(0,1) .. (root);
+	\draw[suffix link] (and) ..controls +(0,-1) .. (root);
+	\draw[suffix link] (it) ..controls +(0,-1.5) and +(1.5,0.5).. (root);
+	\draw[suffix link] (and it) ..controls +(-2,0) .. (it);
+	\draw[suffix link] (and it X) ..controls +(2,3) and +(1,1).. (it X);
+	\draw[suffix link] (and it X him) ..controls +(-0.5,1.5).. (it X him);
+	\draw[suffix link] (and it disheartens) ..controls +(2,2) and +(2,1).. (it disheartens);
+	\draw[suffix link] (it disheartens) .. controls +(9,1) and +(9,0) .. (disheartens);
+	
+%	\node (him) [rectangle, draw] at (1,5) {};
+%	\draw[->] (root) -- (him) node [pos=0.5,left] {him};
+	\draw[suffix link] (him) ..controls +(-1.5,0) and +(-1,3) .. (root);
+	\draw[suffix link] (X him) .. controls +(10,-1) and +(10,3) .. (him);
+	
+%	\node (him plus) at (3,7) {};
+%	\node (him plus plus) at (3,9) {};
+%	\draw[->] (him) -- (him plus);
+%	\draw[->] (him) -- (him plus plus);
+%
+%	\node (it plus) at (4,7) {};
+%	\node (it plus plus) at (4,9) {};
+%	\draw[->] (it) -- (it plus);
+%	\draw[->] (it) -- (it plus plus);
+%
+
+\end{tikzpicture}

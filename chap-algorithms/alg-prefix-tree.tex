@@ -1,0 +1,102 @@
+
+\newcommand\varsuffix{\mathit{suffix}}
+\newcommand\varprefix{\mathit{prefix}}
+\newcommand\funcchildren{\mathrm{children}}
+
+\newcommand\sufflink{\mathit{suffix\_link}}
+
+\noindent {\bf Function} {\sc Generate\_Prefix\_Tree}
+
+\noindent {\bf Input:} source sentence $f_1^I$, prefix tree root node $p_\epsilon$
+\begin{algorithmic}[1]
+
+	\State $\funcchildren(p_\epsilon) \leftarrow \funcchildren(p_\epsilon) \cup p_X$
+	\For {$i$ from $1$ to $I$}
+		\State Add $\langle f_i,i,i+1,p_\epsilon \rangle$ to queue \Comment $\langle$pattern, span start, span end, prefix node$\rangle$
+	\EndFor
+	\For {$i$ from 1 to $I$}
+		\State Add $\langle Xf_i, i-1, i+1, p_X \rangle$ to queue
+	\EndFor
+	\While {queue is not empty}
+		\State Pop $\langle \alpha, i, j, p_{a\beta} \rangle$ from queue
+		\If {$p_{a\beta{}f_j} \in \funcchildren(p_{a\beta})$}
+			\If{$p_{a\beta{}f_j}$ is inactive}
+				\State Continue to next item in queue
+			\Else
+				\State \Call{Extend\_Queue}{$a\beta{}f_j, i, j, f_1^I$}
+			\EndIf
+		\Else
+			\State $\funcchildren(p_{a\beta}) \leftarrow \funcchildren(p_{a\beta}) \cup p_{a\beta{}f_j}$
+			\State $p_\beta{} \leftarrow \sufflink(p_{a\beta})$
+			\If {$p_{\beta{}f_j}$ is inactive}
+				\State Mark $p_{a\beta{}f_j}$ inactive
+			\Else
+				\State $Q_{a\beta{}f_j} \leftarrow$ \Call{Query}{$a\beta{}f_j, Q_{a\beta}, Q_{\beta{}f_j}$}
+				\If {$Q_{a\beta{}f_j} = \emptyset$}
+					\State Mark $p_{a\beta{}f_j}$ inactive
+				\Else
+					\State Mark $p_{a\beta{}f_j}$ active
+					\State \Call{Extend\_Queue}{$a\beta{}f_j, i, j, f_1^I$}
+				\EndIf
+			\EndIf
+		\EndIf
+	\EndWhile
+
+\end{algorithmic}
+
+~
+
+\noindent {\bf Function} {\sc Extend\_Queue}
+
+\noindent {\bf Input:} $\alpha, i, j, f_1^I, p_\alpha$
+\begin{algorithmic}[1]
+	\If {$|\alpha| < \maxphraselen$ and $j-i+1 \leq \maxphrasespan$}
+		\State Add $\langle \alpha{}f_j, i, j+1, p_\alpha \rangle$ to queue
+		\If {$arity(\alpha) < \maxnts$}
+			\State $\funcchildren(p_{\alpha}) \leftarrow \funcchildren(p_{\alpha}) \cup p_{\alpha{}X}$
+			\State Mark $p_{\alpha{}X}$ active
+			\State $Q_{\alpha{}X} \leftarrow Q_\alpha$ 
+			\For{$k$ from $j+1$ to $min(I,i+\maxphraselen)$}
+				\State Add $\langle \alpha{}f_jXf_k, i, k, \alpha{}X \rangle$ to queue
+			\EndFor
+		\EndIf
+	\EndIf
+\end{algorithmic}
+
+%	for k, i, node, prefix, is_shadow_path in frontier:
+%
+%		word_id = fwords[i]
+%		phrase = prefix + (word_id,)
+%		str_phrase = map(sym.tostring, phrase)
+%		hiero_phrase = rule.Phrase(phrase)
+%		arity = hiero_phrase.arity()
+%
+%		#log.writeln("pos %2d, node %5d, '%s'" % (i, node.id, hiero_phrase), 3)
+%		if self.search_file is not None:
+%			self.search_file.write("%s\n" % hiero_phrase)
+%
+%		lookup_required = False
+%		if word_id in node.children:
+%			if node.children[word_id] is None:
+%				#log.writeln("Path dead-ends at this node", 4)
+%				continue
+%			else:
+%				#log.writeln("Path continues at this node", 4)
+%				node = node.children[word_id]
+%		else:
+%			if node.suffix_link is None:
+%				#log.writeln("Current node is root; lookup required", 4)
+%				lookup_required = True
+%			else:
+%				if word_id in node.suffix_link.children:
+%					if node.suffix_link.children[word_id] is None:
+%						#log.writeln("Suffix link reports path is dead end", 4)
+%						node.children[word_id] = None
+%						continue
+%					else:
+%						#log.writeln("Suffix link indicates lookup is reqired", 4)
+%						lookup_required = True
+%				else:
+%					#log.writeln("ERROR: We never get here")
+%					raise Exception("Keyword trie error")
+%

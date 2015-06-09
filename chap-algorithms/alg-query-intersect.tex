@@ -1,0 +1,37 @@
+\noindent {\bf Function} {\sc Query\_Intersect}
+
+\noindent {\bf Input:} sorted prefix matchings $M_{a\alpha}$ and sorted suffix matchings $M_{\alpha{}b}$
+\begin{algorithmic}[1]
+
+	\State $M_{a\alpha{}b} \leftarrow \emptyset$
+	\State $I \leftarrow |M_{a\alpha}|$
+	\State $J \leftarrow |M_{\alpha{}b}|$
+	\State $j \leftarrow 0$
+	\State $m_1 \leftarrow -1$
+	\For {$i$ from $0$ to $I$}
+		\State $m_{a\alpha} \leftarrow M_{a\alpha}[i]$
+		\State $m_{\alpha{}b} \leftarrow M_{\alpha{}b}[j]$
+		\If {$m_{a\alpha,1} \neq m_1$}
+			\While {$m_{a\alpha} \ddot{>} m_{\alpha{}b}$ and $j < J$}
+				\State $j \leftarrow j + 1$
+				\State $m_{\alpha{}b} \leftarrow M_{\alpha{}b}[j]$
+			\EndWhile
+			\If {$m_{a\alpha} \ddot{>} m_{\alpha{}b}$ and $j = J$}
+				\State Break
+			\EndIf
+		\EndIf
+		\State $k \leftarrow j$
+		\While {not $m_{a\alpha} \ddot{<} m_{\alpha{}b}$}
+			\If {$m_{a\alpha} \ddot{=} m_{\alpha{}b}$}
+				\State Append $m_{a\alpha} \bowtie m_{\alpha{}b}$ to $M_{a\alpha{}b}$
+			\EndIf
+			\If {$k = J$}
+				\State Break
+			\Else
+				\State $k \leftarrow k + 1$
+				\State $m_{\alpha{}b} \leftarrow M_{\alpha{}b}[k]$
+			\EndIf
+		\EndWhile
+	\EndFor
+	\State \Return {$M_{a\alpha{}b}$}
+\end{algorithmic}

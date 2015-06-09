@@ -1,0 +1,52 @@
+\begin{tikzpicture}
+	\node (mem)[rectangle,rounded corners,fill=lightgray,minimum height=4.0cm,minimum width=2.8cm] at (10,-5.6){};
+	\node (corpus)[rectangle,draw,label=90:parallel text,minimum height=2.5cm,minimum width=1.5cm] at (0,0) {};
+	\foreach \y in {0.05,0.1,...,2.4}{
+		\draw[yshift=-1.2cm] (-0.65,\y) -- (-0.05,\y);
+		\draw[yshift=-1.2cm] (0.05,\y) -- (0.65,\y);
+	}
+
+	\node (rules)[rectangle,draw,label=90:extracted rules,minimum height=4.0cm,minimum width=0.75cm] at (5,0) {};
+	\foreach \y in {0.05,0.1,...,3.9}{
+		\draw[xshift=5.0cm,yshift=-1.95cm] (-0.3,\y) -- (-0.05,\y);
+		\draw[xshift=5.0cm,yshift=-1.95cm] (0.05,\y) -- (0.3,\y);
+	}
+
+	\node (pt)[rectangle,draw,fill=white,label=90:phrase table,minimum height=3.5cm,minimum width=2.20cm] at (10,0) {};
+	\foreach \y in {0.05,0.1,...,3.4}{
+		\draw[xshift=10.0cm,yshift=-1.7cm] (-1.0,\y) -- (-0.75,\y);
+		\draw[xshift=10.0cm,yshift=-1.7cm] (-0.65,\y) -- (-0.4,\y);
+		\draw[xshift=10.0cm,yshift=-1.7cm] (-0.3,\y) -- (-0.05,\y);
+		\draw[xshift=10.0cm,yshift=-1.7cm] (0.05,\y) -- (0.3,\y);
+		\draw[xshift=10.0cm,yshift=-1.7cm] (0.4,\y) -- (0.65,\y);
+		\draw[xshift=10.0cm,yshift=-1.7cm] (0.75,\y) -- (1.0,\y);
+	}
+
+	\node (filtered pt)[rectangle,draw,fill=white,minimum height=0.75cm,minimum width=2.20cm] at (10,-5.35) {};
+	\foreach \y in {0.05,0.1,...,0.7}{
+		\draw[xshift=10.0cm,yshift=-5.7cm] (-1.0,\y) -- (-0.75,\y);
+		\draw[xshift=10.0cm,yshift=-5.7cm] (-0.65,\y) -- (-0.4,\y);
+		\draw[xshift=10.0cm,yshift=-5.7cm] (-0.3,\y) -- (-0.05,\y);
+		\draw[xshift=10.0cm,yshift=-5.7cm] (0.05,\y) -- (0.3,\y);
+		\draw[xshift=10.0cm,yshift=-5.7cm] (0.4,\y) -- (0.65,\y);
+		\draw[xshift=10.0cm,yshift=-5.7cm] (0.75,\y) -- (1.0,\y);
+	}
+
+	\draw[->] (corpus.east) -- (rules.west);
+	\draw[->] (rules.east) -- (pt.west);
+
+	\node [fill=white,draw,rectangle,rounded corners] at (2.65,0) {\begin{tabular}{c}rule\\extraction\end{tabular}};
+	\node [fill=white,draw,rectangle,rounded corners] at (7.0,0) {\begin{tabular}{c}parameter\\estimation\end{tabular}};
+	\node (filtering) [fill=white,draw,rectangle,rounded corners] at (10,-2.5) {~~filtering~~};
+
+	\node (input) [rectangle,draw,label=90:input source text] at (2.2,-6.75) {\zh{虽然 北 风 呼啸 , 但 天空 依然 十分 清澈 。}};
+	\node (decoder)[rectangle,rounded corners,draw,fill=white] at (10,-6.75) {\begin{tabular}{c}decoding\\algorithm\end{tabular}};
+
+	\draw[->] (pt.south) -- (filtering.north);
+	\draw[->] (filtering.south) -- (filtered pt.north);
+	\draw[->] (filtered pt.south) -- (decoder.north);
+	\draw[->] (input.east) -- (decoder.west);
+	\draw[->] (6.0,-6.75) -- (6.0,-2.5) -- (filtering.west);
+	\node [fill=white,anchor=south] at (mem.north) {main memory};
+	\node [fill=lightgray] at (10.0,-4.2){\begin{tabular}{c}filtered\\phrase table\end{tabular}};
+\end{tikzpicture}

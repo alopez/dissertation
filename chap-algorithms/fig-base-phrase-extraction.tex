@@ -1,0 +1,204 @@
+\begin{tikzpicture}
+	\renewcommand\currentex[1]{\extractionex{5}{1, 3, 5}{2, 4}{1/1, 2/3, 3/2, 4/4, 5/5}{#1}}
+	\currentex{}
+	\node [anchor=south] at (source 3.north) {\fboxsep1pt 1. Find source phrase $f_2 X_{\fbox{\scriptsize 1}} f_4$.};
+	\path (target 1.south west) -- +(0,-3) coordinate (ex 1 left);
+	\begin{scope}[xshift=5cm]
+		\currentex{
+			\path[style=main phrase] (target 2.north west) rectangle (target 4.south east);
+		}
+		\node [anchor=south] at (source 3.north) {2. Find target span.};
+	\end{scope}
+	\begin{scope}[xshift=10cm]
+		\currentex{
+			\fill[main phrase] (source 2.north west) rectangle (target 4.south east);
+		}
+		\node [anchor=south] at (source 3.north) {3. Find reflected source span.};
+	\end{scope}
+	\begin{scope}[yshift=-3.2cm]
+		\currentex{
+			\fill[main phrase] (source 2.north west) rectangle (target 4.south east);
+			\fill[source gap] (source 3.north west) rectangle (source 3.south east);
+		}
+		\node [anchor=south,text width=5cm,text centered] at (source 3.north) {\fboxsep1pt 4. Word $f_3$ is spanned by source gap $X_{\fbox{\scriptsize 1}}$.};
+	\end{scope}
+	\begin{scope}[xshift=5cm,yshift=-3.2cm]
+		\currentex{
+			\fill[main phrase] (source 2.north west) rectangle (target 4.south east);
+			\fill[source gap] (source 3.north west) rectangle (source 3.south east);
+			\fill[subtracted phrase] (target 2.north west) rectangle (target 2.south east);
+		}
+		\node [anchor=south,text width=5cm,text centered] at (source 3.north) {5. Find target span for the source gap.};
+	\end{scope}
+	\begin{scope}[xshift=10cm,yshift=-3.2cm]
+		\currentex{
+		\fill[main phrase] (source 2.north west) rectangle (target 4.south east);
+		\fill[subtracted phrase] (source 3.north west)
+			-- (source 3.north east)
+			-- (source 3.south east)
+			-- (target 2.north east)
+			-- (target 2.south east)
+			-- (target 2.south west)
+			-- (target 2.north west)
+			-- (source 3.south west)
+			-- cycle;
+		}
+		\draw[snake=brace,segment amplitude=2mm] (target 4.south east) -- (target 2.south west) 
+			node (extract label) [below=2mm,pos=0.5] {\fboxsep1pt 7. Extract $f_2 X_{\fbox{\scriptsize 1}} f_4 / X_{\fbox{\scriptsize 1}} e_3 e_4$};
+		\node [anchor=south,text width=5cm,text centered] at (source 3.north) {6. Find reflected source span for the target gap.};
+	\end{scope}
+	\path (target 5.south east) -- +(0,-3) coordinate (ex 1 right);
+
+	\path (extract label.south) -- +(0,-0.15) coordinate (bottom);
+	\draw [gray,thin] (bottom) -- (bottom -| ex 1 left) coordinate (label loc);
+	\draw [gray,thin] (bottom) -- (bottom -| ex 1 right);
+	\node [anchor=south west] at (label loc) {Phrase extraction with embedded source gap};
+	
+	
+	\begin{scope}[yshift=-6.7cm]
+	\renewcommand\currentex[1]{\extractionex{5}{1, 5}{2,...,4}{1/3, 2/4, 3/4, 4/2, 5/5}{#1}}
+	\currentex{}
+	\node [anchor=south] at (source 3.north) {1. Find source phrase $f_2 f_3 f_4$.};
+	\path (target 1.south west) -- +(0,-3) coordinate (ex 1 left);
+	\begin{scope}[xshift=5cm]
+		\currentex{
+			\path[style=main phrase] (target 2.north west) rectangle (target 4.south east);
+		}
+		\node [anchor=south] at (source 3.north) {2. Find target span.};
+	\end{scope}
+	\begin{scope}[xshift=10cm]
+		\currentex{
+			\fill[main phrase] (source 1.north west) 
+				-- (source 4.north east) 
+				-- (target 4.south east) 
+				-- (target 2.south west)
+				-- (target 2.north west)
+				-- (source 1.south west)
+				--cycle;
+		}
+		\node [anchor=south] at (source 3.north) {3. Find reflected source span.};
+	\end{scope}
+	\begin{scope}[yshift=-3.2cm]
+		\currentex{
+			\fill[main phrase] (source 1.north west) 
+				-- (source 4.north east) 
+				-- (target 4.south east) 
+				-- (target 2.south west)
+				-- (target 2.north west)
+				-- (source 1.south west)
+				--cycle;
+			\fill[source gap] (source 1.north west) rectangle (source 1.south east);
+		}
+		\node [anchor=south,text width=5cm,text centered] at (source 3.north) {4. Word $f_1$ in reflected source span represents gap.};
+	\end{scope}
+	\begin{scope}[xshift=5cm,yshift=-3.2cm]
+		\currentex{
+			\fill[main phrase] (source 1.north west) 
+				-- (source 4.north east) 
+				-- (target 4.south east) 
+				-- (target 2.south west)
+				-- (target 2.north west)
+				-- (source 1.south west)
+				--cycle;
+			\fill[source gap] (source 1.north west) rectangle (source 1.south east);
+			\fill[subtracted phrase] (target 3.north west) rectangle (target 3.south east);
+		}
+		\node [anchor=south,text width=5cm,text centered] at (source 3.north) {5. Find target span for the source gap.};
+	\end{scope}
+	\begin{scope}[xshift=10cm,yshift=-3.2cm]
+		\currentex{
+			\fill[main phrase] (source 1.north west) 
+				-- (source 4.north east) 
+				-- (target 4.south east) 
+				-- (target 2.south west)
+				-- (target 2.north west)
+				-- (source 1.south west)
+				--cycle;
+			\fill[subtracted phrase] (source 1.north west)
+				-- (source 1.north east)
+				-- (source 1.south east)
+				-- (target 3.north east)
+				-- (target 3.south east)
+				-- (target 3.south west)
+				-- (target 3.north west)
+				-- (source 1.south west)
+				--cycle;
+		}
+		\draw[snake=brace,segment amplitude=2mm] (target 4.south east) -- (target 2.south west) 
+			node (extract label) [below=2mm,pos=0.5] {\fboxsep1pt 7. Extract $X_{\fbox{\scriptsize 1}} f_2 f_3 f_4 / e_2 X_{\fbox{\scriptsize 1}} e_4$};
+		\node [anchor=south,text width=5cm,text centered] at (source 3.north) {6. Find reflected source span for the target gap.};
+	\end{scope}
+	\path (target 5.south east) -- +(0,-3) coordinate (ex 1 right);
+
+	\path (extract label.south) -- +(0,-0.15) coordinate (bottom);
+	\draw [gray,thin] (bottom) -- (bottom -| ex 1 left) coordinate (label loc);
+	\draw [gray,thin] (bottom) -- (bottom -| ex 1 right);
+	\node [anchor=south west] at (label loc) {Phrase extraction with embedded target gap};
+	\end{scope}
+
+
+	\begin{scope}[yshift=-13.4cm]
+	\renewcommand\currentex[1]{\extractionex{5}{1, 2, 5}{3, 4}{1/3, 2/1, 3/2, 4/4, 5/5}{#1}}
+	\currentex{}
+	\node [anchor=south] at (source 3.north) {1. Find source phrase $f_2 f_3 f_4$.};
+	\path (target 1.south west) -- +(0,-3) coordinate (ex 1 left);
+	\begin{scope}[xshift=5cm]
+		\currentex{
+			\path[style=main phrase] (target 2.north west) rectangle (target 4.south east);
+		}
+		\node [anchor=south] at (source 3.north) {2. Find target span.};
+	\end{scope}
+	\begin{scope}[xshift=10cm]
+		\currentex{
+			\fill[main phrase] (source 1.north west) 
+				-- (source 4.north east) 
+				-- (target 4.south east) 
+				-- (target 2.south west)
+				-- (target 2.north west)
+				-- (source 1.south west)
+				--cycle;
+		}
+		\node [anchor=south] at (source 3.north) {3. Find reflected source span.};
+		\path (target 5.south east) -- +(0,-3) coordinate (ex 1 right);
+	\end{scope}
+	\begin{scope}[yshift=-3.2cm]
+		\currentex{
+			\fill[main phrase] (source 1.north west) 
+				-- (source 4.north east) 
+				-- (target 4.south east) 
+				-- (target 2.south west)
+				-- (target 2.north west)
+				-- (source 1.south west)
+				--cycle;
+			\fill[source gap] (source 1.north west) rectangle (source 2.south east);
+		}
+		\node [anchor=south,text width=5cm,text centered] at (source 3.north) {4. Words $f_1$ and $f_2$ in reflected source span represent gap.};
+	\end{scope}
+	\begin{scope}[xshift=5cm,yshift=-3.2cm]
+		\currentex{
+			\fill[main phrase] (source 1.north west) 
+				-- (source 4.north east) 
+				-- (target 4.south east) coordinate [pos=0.5] (midphrase)
+				-- (target 2.south west) 
+				-- (target 2.north west)
+				-- (source 1.south west)
+				--cycle;
+			\fill[source gap] (source 1.north west) rectangle (source 2.south east);
+			\fill[subtracted phrase] (target 1.north west) rectangle (target 3.south east);
+		}
+		\node [anchor=south,text width=5cm,text centered] at (source 3.north) {5. Find target span for the source gap.};
+	\end{scope}
+	\begin{scope}[xshift=10cm,yshift=-3.2cm]
+		\node (explanation) [text width=5.5cm,text centered] at (2,0.75) {6. Extraction fails because phrase target span does not completely contain gap target span.};
+	\end{scope}
+
+	\path (target 2.south) -- +(0,-1) coordinate (gap control 2) -- ++(5.5,0) coordinate (gap control 1);
+	\draw[->,gray,thin] (explanation.south) ..controls (gap control 1) and (gap control 2) .. (target 2.south);
+	\draw[->,gray,thin] (explanation.west) ..controls +(-0.5,0) .. (midphrase);
+	\path (target 1.south) -- +(0,-0.8) coordinate (bottom);
+	\path (bottom) -- (bottom -| ex 1 left) coordinate (label loc);
+%	\draw [gray,thin] (bottom) -- (bottom -| ex 1 right);
+	\node [anchor=south west] at (label loc) {Unsuccesful phrase extraction};
+	\end{scope}
+
+\end{tikzpicture}

@@ -1,0 +1,6 @@
+\begin{tikzpicture}
+	%\draw[step=1,gray,very thin] (0,0) grid (10,3);
+	\draw[<->,gray,thin] (0,1.5) -- (0,0.75) node [black,anchor=east] {$\displaystyle y = \sum_{i=0}^{x} time(x)$}-- (0,0) -- (7,0);
+	\node at (3.5,-0.5) {$x$ = computations, ordered by $time(x)$};
+	\draw[blue!50!gray,thick] plot file {chap-algorithms/data-cumulative-baseline-timing};
+\end{tikzpicture}

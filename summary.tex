@@ -1,0 +1,120 @@
+%Thesis Main Page used with thesis.sty (Dorothea Brosius, August 2006) based on the
+%University of Maryland, College Park  "Thesis and Dissertation Style Guide," 
+%2005-2006, Fall 2005 Edition
+
+\documentclass[11pt]{thesis-2}  % USE IN FINAL VERSION
+%\documentclass[11pt]{nice-thesis}
+\usepackage{times}
+\usepackage[svgnames]{xcolor}
+\usepackage[sort,round]{natbib}
+\usepackage{lscape}
+\usepackage{indentfirst}
+\usepackage{latexsym}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage[pointedenum]{paralist}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[noend]{algpseudocode}
+% Chinese stuff (borrowed from HLT 2005 paper)
+\usepackage{CJK}
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+\usepackage{mathptm}
+\usepackage{afterpage}
+\usepackage{tikz}
+\usepackage{sparklines}
+\usepackage{hyperref}
+\usepackage{lopez}
+\usepackage{extraction-fig-macros}
+
+\hypersetup{
+    pdftitle={Machine Translation by Pattern Matching},    % title
+    pdfauthor={Adam Lopez},     % author
+    pdfsubject={computer science},   % subject of the document
+    pdfdisplaydoctitle=true,
+    colorlinks=true,       % false: boxed links; true: colored links
+    linkcolor=MidnightBlue,          % color of internal links
+    citecolor=MidnightBlue,        % color of links to bibliography
+    urlcolor=DarkGreen           % color of external links
+}
+
+\renewcommand{\baselinestretch}{1} % 2 IN OFFICIAL VERSION
+\setlength{\textwidth}{5.9in}
+\setlength{\textheight}{9in}
+\setlength{\topmargin}{-.50in}
+\setlength{\oddsidemargin}{.55in}
+\setlength{\parindent}{.4in}
+\pagestyle{empty}
+
+\newcommand{\figpreamble}{\renewcommand{\baselinestretch}{1}}
+\newcommand{\figpostamble}{\renewcommand{\baselinestretch}{1}} % 2 IN OFFICIAL VERSION
+%\newcommand{\figfontsize}[1]{{\small #1}} % USE IN OFFICIAL VERSION
+\newcommand{\figfontsize}[1]{#1} 
+
+\begin{document}
+
+	{\Large \begin{center}Adam Lopez: Machine Translation by Pattern Matching\end{center}} % this is a bit hackish
+	%\addcontentsline{toc}{chapter}{Abstract}
+	%\vspace{20pt}
+
+	%\renewcommand{\baselinestretch}{2}
+	\large \normalsize
+	The most promising systems for machine translation of natural language
+	are based on statistical models learned from data.  Conventional
+	use of a statistical translation model requires a substantial
+	offline computation and representation in main memory.
+	Therefore, the principal bottlenecks to the amount of data we can exploit
+	and the complexity of models we can use are available memory and CPU time,
+	and current state of the art already pushes these limits.  With data size
+	and model complexity continually increasing, a scalable solution to this
+	problem is central to future improvement.
+
+	{\em Translation by pattern matching} realizes this solution by removing 
+	the bottlenecks required to work with very large models.  The key idea is 
+	that the complete model is never actually computed or stored---rules and parameters 
+	are computed only as needed.  In this design, the aligned training data resides in 
+	memory, and when translations of a source sentence are needed, the relevant rules are found in 
+	the data, extracted, and scored.  For this to be practical, the on-demand computation must be 
+	very fast.  Several researchers independently prototyped a solution for common
+	phrase-based models based on the translation of substrings.  It depends on the
+	ability to quickly locate substrings in the training data using very fast
+	pattern matching algorithms.  However, they leave several open problems.  
+	Among these is a question: can this approach match the performance of conventional 
+	methods despite unavoidable differences that it induces in the model?  We answer
+	this question affirmatively.
+
+	The main open problem we address is much harder.  New state-of-the-art translation models
+	are based on the translation of {\em discontiguous substrings} -- that is, substrings
+	containing variable-length gaps.  State of the art pattern
+	matching algorithms for these models are much too slow, taking several minutes
+	per sentence.  We introduce new algorithms for this problem that reduce empirical 
+	computation time by two orders of magnitude, making translation by
+	pattern matching widely applicable and useable with the best models. 
+	We use our new algorithms to build a
+	model that is two orders of magnitude larger than the current state of the
+	art and substantially outperforms a strong competitor in Chinese-English
+	translation.  We show that a conventional representation of this model would
+	be impractical, requiring over two months of CPU time to compute and nearly
+	a terabyte of storage.  In contrast, the data structures required by our 
+	algorithms require less than an hour to compute and require little additional
+	overhead during decoding.  Although our method scales with the number of 
+	processors, it is feasible even with modest computational resources, and thus
+	places large-scale research on statistical machine translation within the
+	reach of many.
+	
+	We use this system to shed light on interesting properties
+	of the underlying hierarchical phrase-based model.  In particular we conduct
+	experiments on a large number of variants that pinpoint the effect of various
+	parameters in the heuristic model induction on the overall performance.  These
+	experiments point the way to further model improvements.
+	
+	Additionally, the thesis includes a self-contained tutorial survey
+	on the rapidly expanding field of statistical machine translation.  It currently
+	represents the most comprehensive contemporary survey of this important field,
+	and was recently published as an article in {\em ACM Computing Surveys}.
+	Other portions of the thesis appeared in the conferences on 
+	{\em Empirical Methods in Natural Language Processing (EMNLP)} and the {\em International
+	Conference on Computational Linguistics (Coling)}.
+	
+\end{document}

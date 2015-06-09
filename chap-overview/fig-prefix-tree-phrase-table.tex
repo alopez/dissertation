@@ -1,0 +1,42 @@
+\begin{center}
+	\begin{tikzpicture}
+		\tikzstyle{level 1}=[sibling distance=6cm,level distance=5cm]
+		\tikzstyle{level 2}=[sibling distance=4cm,level distance=5cm]
+		\tikzstyle{level 3}=[sibling distance=2cm,level distance=4cm]
+		\tikzstyle{edge from parent}=[->,draw]
+		\node [circle,draw] {}[grow=right]
+			child {
+				node [rectangle,draw] {\begin{tabular}{ccccc}remained strong & $\langle 0.07, 0.01, 0.00, 0.00 \rangle$ \\ is still & $\langle 0.03, 0.01, 0.08, 0.03 \rangle$ \end{tabular}}
+					child {
+						node [rectangle,draw] {\begin{tabular}{ccccc}is still clear & $\langle 1.00, 0.00, 0.11, 0.00 \rangle$ \\ is still very & $\langle 0.05, 0.00, 0.22, 0.01\rangle$ \end{tabular}}
+						edge from parent
+							node[left] {\zh{十分}}
+					} 
+					child {
+						node [rectangle,draw] {\begin{tabular}{ccccc}is filled with & $\langle 0.05, 0.00, 0.25, 0.00\rangle$ \end{tabular}}
+							child { node {} edge from parent node[above] {\zh{了}}}
+						edge from parent
+							node[left] {\zh{充满}}
+				}
+				edge from parent
+					node[left] {\zh{依然}}
+			} 
+			child {
+				node [rectangle,draw] {\begin{tabular}{ccccc}north & $\langle 0.88, 0.53, 0.69, 0.43 \rangle$ \\ northbound & $\langle 0.02, 0.31, 0.00, 0.09\rangle$\\ northern side & $\langle 0.33, 0.15, 0.00, 0.00 \rangle$\end{tabular}}
+					child {
+						node [rectangle,draw] {\begin{tabular}{ccccc}nato & $\langle 0.79, 0.19, 0.82, 0.10 \rangle$\\by nato & $\langle 0.43, 0.19, 0.00, 0.10\rangle$\end{tabular}}
+							child { node {} edge from parent node[below] {\zh{在}}}
+							child { node {} edge from parent node[above] {\zh{国家}}}
+						edge from parent
+							node[left] {\zh{约}}
+					} 
+				child {
+					node [rectangle,draw] {\begin{tabular}{ccccc}north wind & $\langle 0.33, 0.16, 0.16, 0.05 \rangle$ \end{tabular}}
+					edge from parent
+						node[left] {\zh{风}}
+				}
+				edge from parent
+					node[left] {\zh{北}}
+			};
+	\end{tikzpicture}	
+\end{center}

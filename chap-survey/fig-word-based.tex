@@ -1,0 +1,124 @@
+\begin{tikzpicture}[node distance=3cm]
+	\usetikzlibrary{arrows}
+	\matrix (english sentence) [nodes={anchor=mid}] {
+		\node (epsilon) {$\varepsilon$}; &
+		\node (word 0) {However}; & 
+		\node (word 1) {,}; & 
+		\node (word 2) {the}; & 
+		\node (word 3) {sky}; & 
+		\node (word 4) {remained}; & 
+		\node (word 5) {clear}; & 
+		\node (word 6) {under}; & 
+		\node (word 7) {the}; & 
+		\node (word 8) {strong}; & 
+		\node (word 9) {north}; & 
+		\node (word 10) {wind}; & 
+		\node (word 11) {.}; \\
+	};
+	
+	\matrix (words) [nodes={anchor=mid},column sep=1pt,row sep=1cm,below of=english sentence] {
+		\node (phi epsilon) {$\varepsilon$}; &
+		\node (phi word 0 1) {However}; & 
+		\node (phi word 0 2) {However}; & 
+		\node (phi word 1) {,}; & 
+		\node (phi word 3) {sky}; & 
+		\node (phi word 4) {remained}; & 
+		\node (phi word 5) {clear}; & 
+		\node (phi word 8) {strong}; & 
+		\node (phi word 9) {north}; & 
+		\node (phi word 10) {wind}; & 
+		\node (phi word 11) {.}; \\
+		\node (zh word 8) {\zh{十分}}; & 
+		\node (zh word 0) {\zh{虽然}}; & 
+		\node (zh word 5) {\zh{但}}; & 
+		\node (zh word 4) {\zh{,}}; & 
+		\node (zh word 6) {\zh{天空}}; & 
+		\node (zh word 7) {\zh{依然}}; & 
+		\node (zh word 9) {\zh{清澈}}; & 
+		\node (zh word 1) {\zh{北}}; & 
+		\node (zh word 2) {\zh{风}}; & 
+		\node (zh word 3) {\zh{呼啸}}; & 
+		\node (zh word 10) {~~\zh{。}}; \\
+	};
+
+	\path (english sentence.center) -- +(0,-1.25) coordinate (fertility cutpoint);
+
+	\draw(epsilon |- word 3.south) -- (epsilon |- fertility cutpoint) node [pos=0.5,fill=white]{1};
+	\draw(word 0 |- word 3.south) -- (word 0 |- fertility cutpoint)  node [pos=0.5,fill=white]{2};
+	\draw(word 1 |- word 3.south) -- (word 1 |- fertility cutpoint)  node [pos=0.5,fill=white]{1};
+	\draw[-|](word 2 |- word 3.south) -- (word 2 |- fertility cutpoint)  node [pos=0.5,fill=white]{0};
+	\draw(word 3 |- word 3.south) -- (word 3 |- fertility cutpoint)  node [pos=0.5,fill=white]{1};
+	\draw(word 4 |- word 3.south) -- (word 4 |- fertility cutpoint)  node [pos=0.5,fill=white]{1};
+	\draw(word 5 |- word 3.south) -- (word 5 |- fertility cutpoint)  node [pos=0.5,fill=white]{1};
+	\draw[-|](word 6 |- word 3.south) -- (word 6 |- fertility cutpoint)  node [pos=0.5,fill=white]{0};
+	\draw[-|](word 7 |- word 3.south) -- (word 7 |- fertility cutpoint)  node [pos=0.5,fill=white]{0};
+	\draw(word 8 |- word 3.south) -- (word 8 |- fertility cutpoint)  node [pos=0.5,fill=white]{1};
+	\draw(word 9 |- word 3.south) -- (word 9 |- fertility cutpoint)  node [pos=0.5,fill=white]{1};
+	\draw(word 10 |- word 3.south) -- (word 10 |- fertility cutpoint) node [pos=0.5,fill=white]{1};
+	\draw(word 11 |- word 3.south) -- (word 11 |- fertility cutpoint) node [pos=0.5,fill=white]{1};
+
+	\draw[->] (epsilon |- fertility cutpoint) -- (phi epsilon |- phi word 0 1.north);
+	\draw[->] (word 0 |- fertility cutpoint) -- (phi word 0 1 |- phi word 0 1.north);
+	\draw[->] (word 0 |- fertility cutpoint) -- (phi word 0 2 |- phi word 0 1.north);
+	\draw[->] (word 1 |- fertility cutpoint) -- (phi word 1 |- phi word 0 1.north);
+	\draw[->] (word 3 |- fertility cutpoint) -- (phi word 3 |- phi word 0 1.north);
+	\draw[->] (word 4 |- fertility cutpoint) -- (phi word 4 |- phi word 0 1.north);
+	\draw[->] (word 5 |- fertility cutpoint) -- (phi word 5 |- phi word 0 1.north);
+	\draw[->] (word 8 |- fertility cutpoint) -- (phi word 8 |- phi word 0 1.north);
+	\draw[->] (word 9 |- fertility cutpoint) -- (phi word 9 |- phi word 0 1.north);
+	\draw[->] (word 10 |- fertility cutpoint) -- (phi word 10 |- phi word 0 1.north);
+	\draw[->] (word 11 |- fertility cutpoint) -- (phi word 11 |- phi word 0 1.north);
+
+	\draw[->](phi epsilon |- phi word 3.south) -- (zh word 8 |- zh word 6.north);
+	\draw[->](phi word 0 1 |- phi word 3.south) -- (zh word 0|- zh word 6.north);
+	\draw[->](phi word 0 2 |- phi word 3.south) -- (zh word 5|- zh word 6.north);
+	\draw[->](phi word 1 |- phi word 3.south) -- (zh word 4 |- zh word 6.north);
+	\draw[->](phi word 3 |- phi word 3.south) -- (zh word 6 |- zh word 6.north);
+	\draw[->](phi word 4 |- phi word 3.south) -- (zh word 7 |- zh word 6.north);
+	\draw[->](phi word 5 |- phi word 3.south) -- (zh word 9 |- zh word 6.north);
+	\draw[->](phi word 8 |- phi word 3.south) -- (zh word 1 |- zh word 6.north);
+	\draw[->](phi word 9 |- phi word 3.south) -- (zh word 2 |- zh word 6.north);
+	\draw[->](phi word 10 |- phi word 3.south) -- (zh word 3 |- zh word 6.north);
+	\draw[->](phi word 11 |- phi word 3.south) -- (zh word 10 |- zh word 6.north);
+
+
+	\matrix (chinese sentence) [nodes={anchor=mid},column sep=3,below of=words] {
+		\node (zh final 0) {\zh{虽然}}; & 
+		\node (zh final 1) {\zh{北}}; & 
+		\node (zh final 2) {\zh{风}}; & 
+		\node (zh final 3) {\zh{呼啸}}; & 
+		\node (zh final 4) {\zh{,}}; & 
+		\node (zh final 5) {\zh{但}}; & 
+		\node (zh final 6) {\zh{天空}}; & 
+		\node (zh final 7) {\zh{依然}}; & 
+		\node (zh final 8) {\zh{十分}}; & 
+		\node (zh final 9) {\zh{清澈}}; & 
+		\node (zh final 10) {~~\zh{。}}; \\
+		\node{\em Although}; & 
+		\node{\em north}; & 
+		\node{\em wind}; & 
+		\node{\em howls}; & 
+		\node{\em ,}; & 
+		\node{\em but}; & 
+		\node{\em sky}; & 
+		\node{\em still}; & 
+		\node{\em extremely}; & 
+		\node{\em limpid}; & 
+		\node{\em .~}; \\
+	};
+	\draw[->] (zh word 0.center |- zh word 6.south) -- (zh final 0.center |- zh final 6.north);
+	\draw[->] (zh word 1.center |- zh word 6.south) -- (zh final 1.center |- zh final 6.north);
+	\draw[->] (zh word 2.center |- zh word 6.south) -- (zh final 2.center |- zh final 6.north);
+	\draw[->] (zh word 3.center |- zh word 6.south) -- (zh final 3.center |- zh final 6.north);
+	\draw[->] (zh word 4.center |- zh word 6.south) -- (zh final 4.center |- zh final 6.north);
+	\draw[->] (zh word 5.center |- zh word 6.south) -- (zh final 5.center |- zh final 6.north);
+	\draw[->] (zh word 6.center |- zh word 6.south) -- (zh final 6.center |- zh final 6.north);
+	\draw[->] (zh word 7.center |- zh word 6.south) -- (zh final 7.center |- zh final 6.north);
+	\draw[->] (zh word 8.center |- zh word 6.south) -- (zh final 8.center |- zh final 6.north);
+	\draw[->] (zh word 9.center |- zh word 6.south) -- (zh final 9.center |- zh final 6.north);
+	\draw[->] (zh word 10.center |- zh word 6.south) -- (zh final 10.center |- zh final 6.north);
+
+	\node [anchor=east,below=1cm,left=2pt] at (english sentence.west) {(1)};
+	\node [anchor=east,below=2.875cm,left=2pt] at (english sentence.west) {(2)};
+	\node [anchor=east,below=4.75cm,left=2pt] at (english sentence.west) {(3)};
+\end{tikzpicture}

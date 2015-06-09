@@ -1,0 +1,41 @@
+\begin{tikzpicture}
+	\matrix (text) [inner sep=0pt,matrix of nodes,nodes={inner sep=3pt,draw,rectangle,anchor=center,minimum height=6.5mm}] {
+		$\cdots$ & $a$ & $\longleftarrow X\longrightarrow$ & $\longleftarrow\beta\longrightarrow$ & $b$ & $\cdots$ \\
+	};
+	\draw[white,line width=4pt] (text.north east) -- (text.south east);
+	\draw[white,line width=4pt] (text.north west) -- (text.south west);
+	
+	\node at (text-1-2.south west) [anchor=north west] {$i$};
+	\node at (text-1-4.south west) [anchor=north west] {$j_1, \cdots, j_{m}$};
+	
+	\draw[snake=brace,raise snake=8mm,segment amplitude=1mm] (text-1-2.north west) -- (text-1-5.north east);
+	\path (text-1-2.north west) -- (text-1-5.north east) coordinate [pos=0.5](midpoint);
+	\node[anchor=south,above=8mm] at (midpoint) {$m_{a\alpha b} = (i, j_1, \cdots, j_{m})$};
+
+	\draw[snake=brace,raise snake=1mm,segment amplitude=1mm] (text-1-3.north west) -- (text-1-5.north east);
+	\path (text-1-3.north west) -- (text-1-5.north east) coordinate [pos=0.5] (midpoint);
+	\node[anchor=south,above=1mm] at (midpoint) {$s(m_{a\alpha b}) = (j_1, \cdots, j_{m})$};
+
+	\node [anchor=south,above=1.4cm] at (text.north west) {(1) $\alpha=X\beta$};
+
+	% case 2
+	\matrix (text) [inner sep=0pt,matrix of nodes,nodes={inner sep=3pt,draw,rectangle,anchor=center,minimum height=6.5mm},anchor=west,right=1.5cm] at (text.east) {
+		$\cdots$ & $a$ & $c$ & $\longleftarrow\beta\longrightarrow$ & $b$ & $\cdots$ \\
+	};
+	\draw[white,line width=4pt] (text.north east) -- (text.south east);
+	\draw[white,line width=4pt] (text.north west) -- (text.south west);
+
+	\node at (text-1-2.south west) [anchor=north west] {$i$};
+	\node at (text-1-3.south west) [anchor=north west] {$i+1, j_1, \cdots, j_{m}$};
+	
+	\draw[snake=brace,raise snake=8mm,segment amplitude=1mm] (text-1-2.north west) -- (text-1-5.north east);
+	\path (text-1-2.north west) -- (text-1-5.north east) coordinate [pos=0.5](midpoint);
+	\node[anchor=south,above=8mm] at (midpoint) {$m_{a\alpha b} = (i, j_1, \cdots, j_{m})$};
+
+	\draw[snake=brace,raise snake=1mm,segment amplitude=1mm] (text-1-3.north west) -- (text-1-5.north east);
+	\path (text-1-3.north west) -- (text-1-5.north east) coordinate [pos=0.5] (midpoint);
+	\node[anchor=south,above=1mm] at (midpoint) {$s(m_{a\alpha b}) = (i+1, j_1, \cdots, j_{m})$};
+
+	\node [above=1.4cm,anchor=south] at (text.north west) {(2) $\alpha = c\beta$};
+
+\end{tikzpicture}

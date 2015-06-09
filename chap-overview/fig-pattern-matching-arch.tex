@@ -1,0 +1,44 @@
+\begin{tikzpicture}
+	\node (mem)[rectangle,rounded corners,fill=lightgray,minimum height=4.3cm,minimum width=12.6cm] at (5.15,-0.15){};
+	\node (corpus)[rectangle,fill=white,draw,label=90:parallel text,minimum height=2.5cm,minimum width=1.5cm] at (0,0) {};
+	\foreach \y in {0.05,0.1,...,2.4}{
+		\draw[yshift=-1.2cm] (-0.65,\y) -- (-0.05,\y);
+		\draw[yshift=-1.2cm] (0.05,\y) -- (0.65,\y);
+	}
+
+	\node (rules)[rectangle,fill=white,draw,minimum height=1.5cm,minimum width=0.75cm] at (5,0) {};
+	\foreach \y in {0.05,0.1,...,1.45}{
+		\draw[xshift=5.0cm,yshift=-0.74cm] (-0.3,\y) -- (-0.05,\y);
+		\draw[xshift=5.0cm,yshift=-0.74cm] (0.05,\y) -- (0.3,\y);
+	}
+	\node [anchor=south] at (rules.north) {\begin{tabular}{c}sentence-specific\\extracted rules\end{tabular}};
+
+	\node (pt)[rectangle,draw,fill=white,minimum height=0.75cm,minimum width=2.20cm] at (10,0) {};
+	\foreach \y in {0.05,0.1,...,0.7}{
+		\draw[xshift=10.0cm,yshift=-0.36cm] (-1.0,\y) -- (-0.75,\y);
+		\draw[xshift=10.0cm,yshift=-0.36cm] (-0.65,\y) -- (-0.4,\y);
+		\draw[xshift=10.0cm,yshift=-0.36cm] (-0.3,\y) -- (-0.05,\y);
+		\draw[xshift=10.0cm,yshift=-0.36cm] (0.05,\y) -- (0.3,\y);
+		\draw[xshift=10.0cm,yshift=-0.36cm] (0.4,\y) -- (0.65,\y);
+		\draw[xshift=10.0cm,yshift=-0.36cm] (0.75,\y) -- (1.0,\y);
+	}
+	\node [anchor=south] at (pt.north) {\begin{tabular}{c}sentence-specific\\phrase table\end{tabular}};
+
+	\draw[->] (corpus.east) -- (rules.west);
+	\draw[->] (rules.east) -- (pt.west);
+
+	\node (pm) [fill=white,draw,rectangle,rounded corners] at (2.65,0) {\begin{tabular}{c}pattern matching\\and source-driven\\rule extraction\end{tabular}};
+	\node [fill=white,draw,rectangle,rounded corners] at (7.0,0) {\begin{tabular}{c}parameter\\estimation\end{tabular}};
+
+	\node (input) [rectangle,draw] at (2.65,-3.5) {\zh{虽然 北 风 呼啸 , 但 天空 依然 十分 清澈 。}};
+
+	\node (decoder)[rectangle,rounded corners,draw,fill=white] at (10,-1.5) {\begin{tabular}{c}decoding\\algorithm\end{tabular}};
+
+	\draw[->] (pt.south) -- (decoder.north);
+	\draw[<-] (decoder.south) -- (10,-3.5) -- (input.east);
+	\draw[->] (input.north) -- (pm.south);
+	\node [fill=white,anchor=south] at (mem.north) {main memory};
+
+	\node [anchor=south,fill=white] at (input.north) {input source text};
+
+\end{tikzpicture}

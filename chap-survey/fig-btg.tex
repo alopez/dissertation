@@ -1,0 +1,54 @@
+\begin{tikzpicture}[node distance=5cm]
+	\tikzstyle{every child} = [level distance=1cm]
+	\tikzstyle{edge from parent} = [draw,->]
+	\node (scfg 1) {X}{
+		child {node (dt 1) {X}{
+			child {node {the}}
+		}} 
+		child {node (npb1 1)[fill=lightgray]{X}{
+			child {node (jj1 1) {X}{
+				child {node {strong}}
+			}} 
+			child {node (npb2 1){X}{[sibling distance=1cm]
+				child {node (jj2 1){X}{
+					child {node {north}}
+				}}
+				child {node (nn 1) {X}{
+					child {node {wind}}
+				}}
+			}}
+		}}
+	}; 
+
+	\node (scfg 2) [right of=scfg 1] {X}{
+		child {node (dt 2){X}{
+			child {node {$\varepsilon$}}
+		}} 
+		child {node (npb1 2)[fill=lightgray]{X}{
+			child {node (npb2 2){X}{[sibling distance=1cm]
+				child {node (jj2 2){X}{
+					child {node (north){\zh{北}}}
+				}}
+				child {node (nn 2){X}{
+					child {node (wind){\zh{风}}}
+				}}
+			}}
+			child {node (jj1 2){X}{
+				child {node (howls){\zh{呼啸}}}
+			}} 
+		}}
+	}; 
+	\tikzstyle{scfg connector} = [thin,gray,densely dotted]
+	
+	\draw[scfg connector] (scfg 1) ..controls +(1,0.5) and +(-1,0.5) .. (scfg 2);
+	\draw[scfg connector] (dt 1) ..controls +(1,0.5) and +(-1,0.5) .. (dt 2);
+	\draw[scfg connector] (npb1 1) ..controls +(1,-0.5) and +(-1,-0.5) .. (npb1 2);
+	\draw[scfg connector] (npb2 1) ..controls +(1,0.5) and +(-1,0.5) .. (npb2 2);
+	\draw[scfg connector] (jj1 1) ..controls +(1,-0.5) and +(-1,-0.5) .. (jj1 2);
+	\draw[scfg connector] (jj2 1) ..controls +(1,0.5) and +(-1,0.5) .. (jj2 2);
+	\draw[scfg connector] (nn 1) ..controls +(1,-0.5) and +(-1,-0.5) .. (nn 2);
+	
+	\node [anchor=north] at (north.south) {\em north};
+	\node [anchor=north] at (wind.south) {\em wind};
+	\node [anchor=north] at (howls.south) {\em howls};
+\end{tikzpicture}

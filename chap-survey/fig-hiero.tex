@@ -1,0 +1,62 @@
+\begin{tikzpicture}[node distance=5cm]
+	\tikzstyle{every child} = [level distance=1cm]
+	\tikzstyle{edge from parent} = [draw,->]
+
+	\node (scfg 1) [fill=lightgray]{X}{
+		child [sibling distance=1cm]{node {However}} 
+		child [sibling distance=1cm]{node {,}}
+		child [sibling distance=2cm]{node (x1 1){X}{[sibling distance=1.1cm]
+			child {node {the}} 
+			child {node {sky}} 
+			child {node {remained}} 
+			child {node {clear}} 
+		}}
+		child {node {} edge from parent[draw=none]}
+		child [level distance=2.5cm,sibling distance=1cm]{node (x2 1){X}{[sibling distance=1.1cm]
+			child {node {under}} 
+			child {node {the}} 
+			child {node {strong}} 
+			child {node {north}} 
+			child {node {wind}} 
+		}}
+		child [sibling distance=5mm]{node {.}}
+	}; 
+
+
+	\node (scfg 2) [fill=lightgray,right of=scfg 1,above=1cm]{X}{[sibling distance=1cm]
+		child [sibling distance=1.2cm]{node (although){\zh{虽然}}} 
+		child [level distance=1.5cm]{node (x2 2){X}{[sibling distance=1.1cm]
+			child {node (north) {\zh{北}}} 
+			child {node (wind) {\zh{风}}} 
+			child {node (howls) {\zh{呼啸}}} 
+		}}
+		child [sibling distance=7mm]{node (comma){,}}
+		child [sibling distance=7mm]{node (but){\zh{但}}}
+		child [level distance=3cm,sibling distance=1.2cm]{node (x1 2){X}{[sibling distance=1.3cm]
+			child {node (sky) {\zh{天空}}} 
+			child {node (still) {\zh{依然}}} 
+			child {node (extremely) {\zh{十分}}} 
+			child {node (limpid) {\zh{清澈}}} 
+		}}
+		child {node (period){~~\zh{。}}}
+	}; 
+	
+	\node [anchor=north] at (although.south) {\em Although};
+	\node [anchor=north] at (north.south) {\em north};
+	\node [anchor=north] at (wind.south) {\em wind};
+	\node [anchor=north] at (howls.south) {\em howls};
+	\node [anchor=north] at (comma.south) {\em ,};
+	\node [anchor=north] at (but.south) {\em but};
+	\node [anchor=north] at (sky.south) {\em sky};
+	\node [anchor=north] at (still.south) {\em still};
+	\node [anchor=north] at (extremely.south) {\em extremely};
+	\node [anchor=north] at (limpid.south) {\em limpid};
+	\node [anchor=north] at (period.south) {\em .~};
+	
+	\tikzstyle{scfg connector} = [thin,gray,densely dotted]
+
+	\draw[scfg connector] (scfg 1) ..controls +(1,0.5) and +(-1,0.5) .. (scfg 2);
+	\draw[scfg connector] (x1 1) ..controls +(2,0.5) and +(-6,-2) .. (x1 2);
+	\draw[scfg connector] (x2 1) ..controls +(1.5,-0.5) and +(-0.5,-2) .. (x2 2);
+
+\end{tikzpicture}

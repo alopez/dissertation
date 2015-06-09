@@ -1,0 +1,57 @@
+% These are my commonly used macros
+\newcommand\ignore[1]{}
+\newcommand\psrcomment[1]{}
+\newcommand\e{{\bf e}}
+\newcommand\evar{{\bf e}}
+\newcommand\evec{e_1^I}
+
+\newcommand\dvar{{\bf d}}
+\newcommand\dvec{d_1^M}
+
+\newcommand\f{{\bf f}}
+\newcommand\fvar{{\bf f}}
+\newcommand\fvec{f_1^J}
+
+%\newcommand\a{{\bf a}}
+\newcommand\avar{{\bf a}}
+\newcommand\avec{a_1^J}
+
+\newcommand\svar{{\bf s}}
+\newcommand\vvar{{\bf v}}
+
+\newcommand\Pe{P(\e)}
+\newcommand\Pf{P(\f)}
+\newcommand\Pef{P(\evar|\fvar)}
+\newcommand\Pedf{P(\evar,\dvar|\fvar)}
+\newcommand\Pefj{P(\e,\f)}
+\newcommand\Pfe{P(\f|\e)}
+\newcommand\Pfde{P(\fvar,\dvar|\evar)}
+
+\newcommand\xvar{{\bf x}}
+\newcommand\yvar{{\bf y}}
+
+\newcommand\mysection[2]{\section{#1}\label{sec:#2}}
+\newcommand\mysubsection[2]{\subsection{#1}\label{sec:#2}}
+\newcommand\mysubsubsection[2]{\subsubsection{#1}\label{sec:#2}}
+\newcommand\sectionref[1]{\textsection\ref{sec:#1}}
+
+\newcommand\figureref[1]{Figure~\ref{fig:#1}}
+\newcommand\tableref[1]{Table~\ref{tab:#1}}
+
+\newcommand\term[1]{{\em #1}}
+\newcommand\argmax{\operatornamewithlimits{argmax}}
+\newcommand\argmin{\operatornamewithlimits{argmin}}
+
+\newcounter{algorithm}
+\setcounter{algorithm}{0}
+
+\newcommand\myalgorithm[2]
+{\refstepcounter{algorithm}
+\begin{table*}
+\hrule height .8pt \kern 2pt
+{\bf Algorithm \arabic{algorithm}} #1
+\kern2pt\hrule\kern2pt
+#2
+\kern2pt\hrule\kern2pt
+\end{table*}
+}

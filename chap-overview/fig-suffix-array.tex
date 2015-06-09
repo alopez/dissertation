@@ -1,0 +1,105 @@
+	\begin{tikzpicture}
+		\matrix (sentence) [nodes={text height=10pt}] at (5.5,7){
+		\node (word 0) {it}; & 
+		\node (word 1) {makes}; & 
+		\node (word 2) {him}; & 
+		\node (word 3) {and}; & 
+		\node (word 4) {it}; & 
+		\node (word 5) {mars}; & 
+		\node (word 6) {him}; & 
+		\node (word 7) {,}; & 
+		\node (word 8) {it}; & 
+		\node (word 9) {sets}; & 
+		\node (word 10) {him}; & 
+		\node (word 11) {on}; & 
+		\node (word 12) {and}; & 
+		\node (word 13) {it}; & 
+		\node (word 14) {takes}; & 
+		\node (word 15) {him}; & 
+		\node (word 16) {off}; & 
+		\node (word 17) {.}; & 
+		\node (word 18) {\#};\\
+		\node (num 0) {0}; & 
+		\node (num 1) {1}; & 
+		\node (num 2) {2}; & 
+		\node (num 3) {3}; & 
+		\node (num 4) {4}; & 
+		\node (num 5) {5}; & 
+		\node (num 6) {6}; & 
+		\node (num 7) {7}; & 
+		\node (num 8) {8}; & 
+		\node (num 9) {9}; & 
+		\node (num 10) {10}; & 
+		\node (num 11) {11}; & 
+		\node (num 12) {12}; & 
+		\node (num 13) {13}; & 
+		\node (num 14) {14}; & 
+		\node (num 15) {15}; & 
+		\node (num 16) {16}; & 
+		\node (num 17) {17}; & 
+		\node (num 18) {18};\\
+		};
+
+
+		\draw[snake=brace,segment amplitude=2mm] (word 2.north west) -- (word 2.north east);
+		\draw[snake=brace,segment amplitude=2mm] (word 6.north west) -- (word 6.north east);
+		\draw[snake=brace,segment amplitude=2mm] (word 10.north west) -- (word 10.north east);
+		\draw[snake=brace,segment amplitude=2mm] (word 15.north west) -- (word 15.north east);
+
+%		\fill[lightgray] (word 2.north west) rectangle (num 2.south east) rectangle (word 2.north east);
+%		\fill[lightgray] (word 6.north west) rectangle (num 6.south east) rectangle (word 6.north east);
+%		\fill[lightgray] (word 10.north west) rectangle (num 10.south east) rectangle (word 10.north east);
+%		\fill[lightgray] (word 15.north west) rectangle (num 15.south east) rectangle (word 15.north east);
+%
+%		\node [text height=10pt] at (word 2.center) {him};
+%		\node [text height=10pt] at (word 6.center) {him};
+%		\node [text height=10pt] at (word 10.center) {him};
+%		\node [text height=10pt] at (word 15.center) {him};
+%		\node [text height=10pt] at (num 2.center) {2};
+%		\node [text height=10pt] at (num 6.center) {6};
+%		\node [text height=10pt] at (num 10.center) {10};
+%		\node [text height=10pt] at (num 15.center) {15};
+
+		\matrix [nodes={rectangle,draw,minimum width=6.5mm,minimum height=6mm}] at (0,0){
+			\node (suffix 3) {3}; \\
+			\node (suffix 12) {12}; \\
+			\node (suffix 2)  [fill=lightgray]{2}; \\
+			\node (suffix 15) [fill=lightgray]{15}; \\
+			\node (suffix 10) [fill=lightgray]{10}; \\
+			\node (suffix 6)  [fill=lightgray]{6}; \\
+			\node (suffix 0) {0}; \\
+			\node (suffix 4) {4}; \\
+			\node (suffix 8) {8}; \\
+			\node (suffix 13) {13}; \\
+			\node (suffix 1) {1}; \\
+			\node (suffix 5) {5}; \\
+			\node (suffix 16) {16}; \\
+			\node (suffix 11) {11}; \\
+			\node (suffix 9) {9}; \\
+			\node (suffix 14) {14}; \\
+			\node (suffix 7) {7}; \\
+			\node (suffix 17) {17}; \\
+			\node (suffix 18) {18}; \\
+		};
+
+		\node [anchor=west,xshift=6pt] at (suffix 0.east) {it makes him and it mars him , it sets him on and it takes him off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 1.east) {makes him and it mars him , it sets him on and it takes him off . \#};
+		\node [anchor=west,xshift=3pt] at (suffix 2.east) {\colorbox{lightgray}{him} and it mars him , it sets him on and it takes him off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 3.east) {and it mars him , it sets him on and it takes him off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 4.east) {it mars him , it sets him on and it takes him off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 5.east) {mars him , it sets him on and it takes him off . \#};
+		\node [anchor=west,xshift=3pt] at (suffix 6.east) {\colorbox{lightgray}{him} , it sets him on and it takes him off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 7.east) {, it sets him on and it takes him off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 8.east) {it sets him on and it takes him off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 9.east) {sets him on and it takes him off . \#};
+		\node [anchor=west,xshift=3pt] at (suffix 10.east) {\colorbox{lightgray}{him} on and it takes him off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 11.east) {on and it takes him off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 12.east) {and it takes him off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 13.east) {it takes him off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 14.east) {takes him off . \#};
+		\node [anchor=west,xshift=3pt] at (suffix 15.east) {\colorbox{lightgray}{him} off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 16.east) {off . \#};
+		\node [anchor=west,xshift=6pt] at (suffix 17.east) {. \#};
+		\node [anchor=west,xshift=6pt] at (suffix 18.east) {\#};
+
+	\end{tikzpicture}

@@ -1,0 +1,75 @@
+\begin{tikzpicture}
+	\matrix (alignment)[nodes={anchor=east,minimum height=12pt},matrix of nodes]{
+		However \\
+		, \\
+		the \\
+		sky \\
+		remained \\
+		clear \\
+		under \\
+		the \\
+		strong \\
+		north \\
+		wind \\
+		. \\
+		|[rotate=-90,anchor=west]| ~ & 
+		|[rotate=-90,anchor=west]| \zh{虽然}~{\em (Although)} & 
+		|[rotate=-90,anchor=west]| \zh{北}~{\em (north)} & 
+		|[rotate=-90,anchor=west]| \zh{风}~{\em (wind)} & 
+		|[rotate=-90,anchor=west]| \zh{呼啸}~{\em (howls)} & 
+		|[rotate=-90,anchor=west]| \zh{,}~{\em (,)} & 
+		|[rotate=-90,anchor=west]| \zh{但}~{\em (but)} & 
+		|[rotate=-90,anchor=west]| \zh{天空}~{\em (sky)} & 
+		|[rotate=-90,anchor=west]| \zh{依然}~{\em (still)} & 
+		|[rotate=-90,anchor=west]| \zh{十分}~{\em (extremely)} & 
+		|[rotate=-90,anchor=west]| \zh{清澈}~{\em (limpid)} & 
+		|[rotate=-90,anchor=west]| ~~\zh{。}~{\em (.)} \\
+	};
+	\tikzstyle{alignment grid} = [gray,thin]
+	\foreach \e in {1,...,12}{
+		\draw[alignment grid] (alignment-\e-1.north -| alignment-13-2.south) -- (alignment-\e-1.north -| alignment-13-12.north);
+	}
+	\draw[alignment grid] (alignment-12-1.south -| alignment-13-2.south) -- (alignment-12-1.south -| alignment-13-12.north);
+
+	\foreach \f in {1,...,12}{
+		\draw[alignment grid] (alignment-13-\f.north |- alignment-12-1.south) -- (alignment-13-\f.north |- alignment-1-1.north);
+	}
+	
+	\tikzstyle{phrase} = [rounded corners,fill=black,draw,fill opacity=0.1];
+	\foreach \ej/\ek/\fj/\fk  in {
+			2/2/6/6, 
+			4/4/8/8, 
+			5/5/9/9, 
+			6/6/11/11/,
+			9/9/5/5,
+			9/8/5/5,
+			9/7/5/5,
+			10/10/3/3,
+			11/11/4/4,
+			12/12/12/12,
+			5/4/8/9,
+			5/3/8/9,
+			6/4/8/11,
+			6/3/8/11,
+			6/5/9/11,
+			7/4/8/11,
+			7/3/8/11,
+			7/5/9/11,
+			8/4/8/11,
+			8/3/8/11,
+			8/5/9/11,
+			11/10/3/4,
+			11/9/3/5,
+			11/8/3/5,
+			11/7/3/5,
+			12/1/2/12,
+			11/1/2/11}{
+		\path [phrase] (alignment-\ej-1.south -| alignment-13-\fj.south) 
+			rectangle (alignment-\ek-1.north -| alignment-13-\fk.north);
+	}
+	\tikzstyle{aligned word} = [circle,fill=black]
+	\foreach \e/\f in {1/2, 1/7, 2/6, 4/8, 5/9, 6/11, 9/5, 10/3, 11/4, 12/12}{
+		\node [aligned word] at (alignment-\e-1 -| alignment-13-\f) {};
+	}
+	
+\end{tikzpicture}
